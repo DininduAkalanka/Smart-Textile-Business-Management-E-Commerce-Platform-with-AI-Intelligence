@@ -1,167 +1,296 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
+import { useState } from 'react';
 import { Product } from '@/types';
 import { useCartStore } from '@/store/useCartStore';
 
-interface ProductCardProps {
+/* ── Color palette for placeholder backgrounds ─────────────── */
+const PLATE_BG = [
+  ['#0d0d0d','#1a0000'],
+  ['#0a0a0a','#001020'],
+  ['#0a0000','#200a00'],
+  ['#06060d','#100618'],
+  ['#000a06','#001a10'],
+  ['#0a0a00','#1a1a00'],
+];
+
+/* ── Category label helper ─────────────────────────────────── */
+function categoryTag(name?: string): string {
+  if (!name) return '';
+  return name;
+}
+
+interface Props {
   product: Product;
   index?: number;
 }
 
-export default function ProductCard({ product, index = 0 }: ProductCardProps) {
-  const addItem = useCartStore((s) => s.addItem);
+export default function ProductCard({ product, index = 0 }: Props) {
+  const addItem = useCartStore(s => s.addItem);
+  const [wishlisted, setWishlisted] = useState(false);
+  const [cartState,  setCartState]  = useState<'idle' | 'added'>('idle');
+
   const discount = product.compareAtPrice
     ? Math.round((1 - Number(product.price) / Number(product.compareAtPrice)) * 100)
     : 0;
 
+  const plate = PLATE_BG[index % PLATE_BG.length];
+  const isNew = index < 4 && !discount;
+
+  function handleCart(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem(product, 1);
+    setCartState('added');
+    setTimeout(() => setCartState('idle'), 1800);
+  }
+
+  function handleWishlist(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setWishlisted(w => !w);
+  }
+
   return (
-    <div
-      className="card animate-fade-in-up"
+    <article
+      className="product-card animate-fade-in-up"
       style={{
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
-        animationDelay: `${index * 0.05}s`,
+        background: 'var(--clr-surface)',
+        border: '1px solid var(--clr-border-2)',
+        borderRadius: 'var(--r-md)',
+        overflow: 'hidden',
+        animationDelay: `${index * 0.055}s`,
+        transition: 'border-color 240ms ease, box-shadow 240ms ease',
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLElement).style.borderColor = 'var(--clr-border)';
+        (e.currentTarget as HTMLElement).style.boxShadow  = 'var(--shadow-md)';
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLElement).style.borderColor = 'var(--clr-border-2)';
+        (e.currentTarget as HTMLElement).style.boxShadow  = 'none';
       }}
     >
-      {/* Sale Badge */}
-      {discount > 0 && <div className="sale-tag">-{discount}%</div>}
-
-      {/* Image Placeholder */}
+      {/* ── Image ───────────────────────────────────────────── */}
       <Link
         href={`/products/${product.slug}`}
-        style={{ textDecoration: 'none' }}
+        aria-label={product.name}
+        style={{ display: 'block', textDecoration: 'none' }}
       >
-        <div
-          style={{
-            height: '220px',
-            background: `linear-gradient(135deg, hsl(${(index * 37 + 200) % 360}, 25%, 88%), hsl(${(index * 37 + 230) % 360}, 30%, 82%))`,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          <span style={{ fontSize: '2.5rem' }}>🧵</span>
-          <span
-            style={{
-              fontSize: '0.75rem',
-              color: 'rgba(0,0,0,0.4)',
-              fontWeight: 500,
-            }}
-          >
-            {product.attributes?.fabricType || 'Fabric'}
-          </span>
-
-          {/* Hover overlay */}
+        <div className="product-card-img-wrap" style={{ aspectRatio: '3/4' }}>
+          {/* Product Image */}
           <div
+            className="product-card-img-inner"
             style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'rgba(26,26,46,0.6)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: 0,
-              transition: 'opacity 0.3s',
+              width: '100%',
+              height: '100%',
+              position: 'relative',
+              overflow: 'hidden',
+              background: 'var(--obsidian-950)'
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = '0')}
           >
-            <span
+            <Image
+              src={`/images/prod${(index % 3) + 1}.png`}
+              alt={product.name}
+              fill
+              style={{ objectFit: 'cover' }}
+              sizes="(max-width: 768px) 50vw, 25vw"
+            />
+          </div>
+
+          {/* Quick-view overlay */}
+          <div
+            className="product-card-actions"
+          >
+            <button
+              onClick={handleCart}
+              id={`add-cart-${product.id}`}
+              disabled={cartState === 'added'}
               style={{
-                color: 'white',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                padding: '0.5rem 1.25rem',
-                border: '1.5px solid white',
-                borderRadius: '0.375rem',
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                padding: '0.625rem 1rem',
+                background: cartState === 'added' ? '#16a34a' : 'var(--clr-brand)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 'var(--r-xs)',
+                fontSize: '0.72rem',
+                fontWeight: 600,
+                fontFamily: 'var(--font-mono)',
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                cursor: cartState === 'added' ? 'default' : 'pointer',
+                transition: 'background 200ms ease',
               }}
             >
-              View Details
-            </span>
+              {cartState === 'added' ? (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  Added
+                </>
+              ) : (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <path d="M16 10a4 4 0 0 1-8 0"/>
+                  </svg>
+                  Add to Bag
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Wishlist button */}
+          <button
+            onClick={handleWishlist}
+            id={`wishlist-${product.id}`}
+            aria-label={wishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
+            className={`product-card-wishlist${wishlisted ? ' active' : ''}`}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill={wishlisted ? 'currentColor' : 'none'}
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+            </svg>
+          </button>
+
+          {/* Badges */}
+          <div style={{ position: 'absolute', top: '0.625rem', left: '0.625rem', display: 'flex', flexDirection: 'column', gap: '0.3rem', zIndex: 5 }}>
+            {discount > 0 && <span className="badge badge-brand">{discount}% Off</span>}
+            {isNew       && <span className="badge badge-dark">New</span>}
+            {product.stockQuantity <= 5 && product.stockQuantity > 0 && (
+              <span className="badge badge-gold">Low Stock</span>
+            )}
           </div>
         </div>
       </Link>
 
-      {/* Content */}
-      <div style={{ padding: '1rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      {/* ── Info ────────────────────────────────────────────── */}
+      <div style={{ padding: '1.125rem 1.125rem 1.25rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+
         {/* Category */}
         {product.category && (
-          <p style={{ fontSize: '0.6875rem', color: 'var(--color-accent)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>
-            {product.category.name}
+          <p
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.58rem',
+              fontWeight: 400,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'var(--clr-brand)',
+              marginBottom: '0.375rem',
+            }}
+          >
+            {categoryTag(product.category.name)}
           </p>
         )}
 
         {/* Name */}
         <Link
           href={`/products/${product.slug}`}
+          className="line-clamp-2"
           style={{
-            textDecoration: 'none',
-            color: 'var(--color-text)',
-            fontSize: '0.9375rem',
+            fontFamily: 'var(--font-sans)',
+            fontSize: '0.875rem',
             fontWeight: 600,
-            lineHeight: 1.4,
+            lineHeight: 1.45,
+            color: 'var(--clr-text)',
+            textDecoration: 'none',
             marginBottom: '0.5rem',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
+            transition: 'color 150ms ease',
           }}
+          onMouseEnter={e => (e.currentTarget.style.color = 'var(--clr-brand)')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'var(--clr-text)')}
         >
           {product.name}
         </Link>
 
         {/* Attributes */}
-        <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
-          {product.attributes?.color && (
-            <span style={{ fontSize: '0.6875rem', padding: '0.125rem 0.5rem', background: 'var(--color-border-light)', borderRadius: '0.25rem', color: 'var(--color-text-muted)' }}>
-              {product.attributes.color}
-            </span>
-          )}
-          {product.attributes?.gsm && (
-            <span style={{ fontSize: '0.6875rem', padding: '0.125rem 0.5rem', background: 'var(--color-border-light)', borderRadius: '0.25rem', color: 'var(--color-text-muted)' }}>
-              {product.attributes.gsm} GSM
-            </span>
-          )}
-        </div>
-
-        {/* Price + Cart */}
-        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div>
-            <span style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--color-text)' }}>
-              ${Number(product.price).toFixed(2)}
-            </span>
-            {product.compareAtPrice && (
-              <span style={{ fontSize: '0.8125rem', color: 'var(--color-text-light)', textDecoration: 'line-through', marginLeft: '0.5rem' }}>
-                ${Number(product.compareAtPrice).toFixed(2)}
+        {(product.attributes?.color || product.attributes?.gsm) && (
+          <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginBottom: '0.625rem' }}>
+            {product.attributes?.color && (
+              <span
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.6rem',
+                  fontWeight: 400,
+                  letterSpacing: '0.08em',
+                  color: 'var(--clr-text-3)',
+                  padding: '0.15rem 0.45rem',
+                  border: '1px solid var(--clr-border-2)',
+                  borderRadius: 'var(--r-xs)',
+                }}
+              >
+                {product.attributes.color}
+              </span>
+            )}
+            {product.attributes?.gsm && (
+              <span
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.6rem',
+                  fontWeight: 400,
+                  letterSpacing: '0.08em',
+                  color: 'var(--clr-text-3)',
+                  padding: '0.15rem 0.45rem',
+                  border: '1px solid var(--clr-border-2)',
+                  borderRadius: 'var(--r-xs)',
+                }}
+              >
+                {product.attributes.gsm} GSM
               </span>
             )}
           </div>
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              addItem(product, 1);
-            }}
-            className="btn btn-primary btn-sm"
-            style={{ padding: '0.375rem 0.75rem', fontSize: '0.75rem' }}
-            title="Add to Cart"
-          >
-            + Cart
-          </button>
+        )}
+
+        {/* Price row */}
+        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+          <div>
+            <span
+              className={`price${discount > 0 ? ' price-sale' : ''}`}
+            >
+              Rs.&nbsp;{Number(product.price).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+            </span>
+            {product.compareAtPrice && (
+              <span className="price-was">
+                Rs.&nbsp;{Number(product.compareAtPrice).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Stock indicator */}
+        {/* Low stock warning */}
         {product.stockQuantity <= 10 && product.stockQuantity > 0 && (
-          <p style={{ fontSize: '0.6875rem', color: 'var(--color-accent)', marginTop: '0.5rem', fontWeight: 500 }}>
-            Only {product.stockQuantity} left in stock
+          <p
+            style={{
+              marginTop: '0.5rem',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.6rem',
+              letterSpacing: '0.08em',
+              color: 'var(--clr-brand)',
+              fontWeight: 400,
+            }}
+          >
+            Only {product.stockQuantity} remaining
           </p>
         )}
       </div>
-    </div>
+    </article>
   );
 }
