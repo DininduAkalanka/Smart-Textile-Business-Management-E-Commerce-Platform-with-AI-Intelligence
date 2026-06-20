@@ -1,15 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useCartStore } from '@/store/useCartStore';
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuthStore();
-  const totalItems = useCartStore((s) => s.totalItems);
+  const items = useCartStore((s) => s.items) || [];
+  const totalItemsCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <header
@@ -103,7 +109,7 @@ export default function Header() {
               <circle cx="19" cy="21" r="1"/>
               <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
             </svg>
-            {totalItems() > 0 && (
+            {mounted && totalItemsCount > 0 && (
               <span
                 style={{
                   position: 'absolute',
@@ -121,13 +127,13 @@ export default function Header() {
                   justifyContent: 'center',
                 }}
               >
-                {totalItems()}
+                {totalItemsCount}
               </span>
             )}
           </Link>
 
           {/* Auth */}
-          {isAuthenticated ? (
+          {mounted && (isAuthenticated ? (
             <div style={{ position: 'relative' }}>
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
@@ -256,7 +262,7 @@ export default function Header() {
                 Register
               </Link>
             </div>
-          )}
+          ))}
         </div>
       </div>
 
