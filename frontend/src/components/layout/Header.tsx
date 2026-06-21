@@ -341,7 +341,7 @@ export default function Header() {
           transition: 'box-shadow 240ms ease, backdrop-filter 240ms ease',
         }}
       >
-        <div className="container" style={{ display: 'flex', alignItems: 'center', height: '64px', gap: '1rem' }}>
+        <div className="container" style={{ display: 'flex', alignItems: 'center', height: '64px', gap: 'clamp(0.25rem, 2.5vw, 1rem)' }}>
 
           {/* Mobile hamburger */}
           <button

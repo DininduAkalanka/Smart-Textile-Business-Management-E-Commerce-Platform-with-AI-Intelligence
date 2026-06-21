@@ -172,14 +172,7 @@ export default function Footer() {
       {/* ── Main links ────────────────────────────────────── */}
       <div style={{ padding: '4rem 0 3rem' }}>
         <div className="container">
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1.6fr repeat(3, 1fr)',
-              gap: '3rem',
-              marginBottom: '3.5rem',
-            }}
-          >
+          <div className="footer-grid">
             {/* Brand column */}
             <div>
               {/* Logo */}

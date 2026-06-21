@@ -692,17 +692,17 @@ a:hover .dept-image {
 .mobile-overlay.open { opacity: 1; visibility: visible; }
 
 .mobile-drawer {
-  position: fixed; inset: 0 0 0 auto;
+  position: fixed; inset: 0 auto 0 0;
   width: min(85vw, 360px);
   background: var(--clr-surface);
   z-index: 491;
-  transform: translateX(100%);
+  transform: translate3d(-100%, 0, 0);
   transition: transform var(--dur-slow) var(--ease-out-expo);
   display: flex; flex-direction: column;
   box-shadow: var(--shadow-xl);
   overflow-y: auto;
 }
-.mobile-drawer.open { transform: translateX(0); }
+.mobile-drawer.open { transform: translate3d(0, 0, 0); }
 
 /* ════════════════════════════════════════════════════════════════
    MARQUEE
@@ -960,3 +960,104 @@ a:hover .dept-image {
 @media (max-width: 1024px) { .hide-tablet { display: none !important; } }
 @media (max-width: 768px)  { .hide-mobile { display: none !important; } .show-mobile { display: flex !important; } }
 @media (min-width: 769px)  { .show-mobile { display: none !important; } }
+
+/* ════════════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN GRID & LAYOUT OVERRIDES
+════════════════════════════════════════════════════════════════ */
+.hero-content-container {
+  padding: 6rem 2rem;
+}
+.dept-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+.uniform-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+}
+.koko-banner-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3rem;
+  align-items: center;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.6fr repeat(3, 1fr);
+  gap: 3rem;
+  margin-bottom: 3.5rem;
+}
+.catalog-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+}
+.tabs-scroller {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+@media (max-width: 1024px) {
+  .dept-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .uniform-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    background: transparent !important;
+    border: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-content-container {
+    padding: 4rem 1.25rem;
+  }
+  .koko-banner-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    text-align: center;
+  }
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+  }
+  .catalog-sidebar {
+    width: 100% !important;
+    display: none;
+    animation: fadeIn 0.2s ease;
+  }
+  .catalog-sidebar.open {
+    display: block !important;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--clr-border);
+    padding-bottom: 2rem;
+  }
+  .tabs-scroller {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tabs-scroller::-webkit-scrollbar {
+    height: 3px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dept-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  .uniform-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}

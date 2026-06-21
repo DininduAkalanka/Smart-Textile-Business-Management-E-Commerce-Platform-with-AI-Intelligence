@@ -271,7 +271,7 @@ export default function HomePage() {
           }}
         />
 
-        <div className="container" style={{ position: 'relative', zIndex: 2, padding: '5rem 2rem' }}>
+        <div className="container hero-content-container" style={{ position: 'relative', zIndex: 2 }}>
           <div style={{ maxWidth: '640px' }}>
             {/* Slide Title */}
             <div
@@ -295,7 +295,7 @@ export default function HomePage() {
               key={`headline-${current.id}`}
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: 'clamp(2.2rem, 5vw, 3.85rem)',
+                fontSize: 'clamp(1.6rem, 5vw, 3.85rem)',
                 fontWeight: 600,
                 lineHeight: 1.1,
                 color: '#fff',
@@ -474,7 +474,7 @@ export default function HomePage() {
             <span className="section-rule" />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+          <div className="dept-grid">
             {DEPARTMENTS.map((dept, idx) => (
               <Link
                 key={dept.id}
@@ -539,10 +539,8 @@ export default function HomePage() {
           </div>
 
           <div
+            className="uniform-grid"
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-              gap: '1px',
               background: 'rgba(255,255,255,0.08)',
               border: '1px solid rgba(255,255,255,0.08)',
               borderRadius: 'var(--r-md)',
@@ -646,7 +644,7 @@ export default function HomePage() {
           </div>
 
           {/* Selector Tabs */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '2.5rem' }}>
+          <div className="tabs-scroller">
             {[
               { id: 'new', label: 'New Arrivals' },
               { id: 'trending', label: 'Trending Items' },
@@ -715,7 +713,7 @@ export default function HomePage() {
         }}
       >
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '3rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="koko-banner-grid">
             <div>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--clr-gold)', display: 'block', marginBottom: '0.75rem' }}>
                 Shop Smart In Sri Lanka
