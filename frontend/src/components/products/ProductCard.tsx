@@ -261,8 +261,8 @@ export default function ProductCard({ product, index = 0 }: Props) {
         )}
 
         {/* Price row */}
-        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-          <div>
+        <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <span
               className={`price${discount > 0 ? ' price-sale' : ''}`}
             >
@@ -273,6 +273,11 @@ export default function ProductCard({ product, index = 0 }: Props) {
                 Rs.&nbsp;{Number(product.compareAtPrice).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
               </span>
             )}
+          </div>
+          {/* BNPL Installment Display */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.62rem', color: 'var(--clr-text-3)', fontFamily: 'var(--font-mono)' }}>
+            <span>Or 3 x Rs. {Math.round(Number(product.price) / 3).toLocaleString('en-LK')} with</span>
+            <span style={{ fontWeight: 700, color: 'var(--clr-text-2)', background: 'var(--clr-surface-3)', padding: '1px 4px', borderRadius: '2px', fontSize: '0.55rem', letterSpacing: '0.04em' }}>KOKO</span>
           </div>
         </div>
 
