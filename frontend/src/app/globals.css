@@ -787,46 +787,59 @@ a:hover .dept-image {
 }
 
 /* ════════════════════════════════════════════════════════════════
-   BRANDS SLIDER
+   BRANDS MARQUEE (Continuous Smooth Scrolling)
 ════════════════════════════════════════════════════════════════ */
-:root {
-  --brand-index: 0;
-  --slide-width: 20%;
-}
-@media (max-width: 1024px) {
-  :root {
-    --slide-width: 33.3333%;
-  }
-}
-@media (max-width: 640px) {
-  :root {
-    --slide-width: 50%;
-  }
+@keyframes brand-marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
-.brands-slider-container {
+.brands-marquee-container {
+  overflow: hidden;
   position: relative;
   max-width: 1360px;
   margin: 0 auto;
-  padding: 0 3rem;
 }
-.brands-slider-track-wrap {
-  overflow: hidden;
-  padding: 0.5rem 0;
+
+/* Gradient fades on left and right edges for a premium luxury feel */
+.brands-marquee-container::before,
+.brands-marquee-container::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 120px;
+  z-index: 2;
+  pointer-events: none;
 }
-.brands-slider-track {
+.brands-marquee-container::before {
+  left: 0;
+  background: linear-gradient(to right, var(--warm-50) 0%, transparent 100%);
+}
+.brands-marquee-container::after {
+  right: 0;
+  background: linear-gradient(to left, var(--warm-50) 0%, transparent 100%);
+}
+
+.brands-marquee-track {
   display: flex;
-  transition: transform 600ms var(--ease-out-expo);
-  transform: translateX(calc(-1 * var(--brand-index) * var(--slide-width)));
+  width: max-content;
+  animation: brand-marquee 24s linear infinite;
 }
+
+.brands-marquee-track:hover {
+  animation-play-state: paused;
+}
+
 .brand-slide {
-  flex: 0 0 var(--slide-width);
+  flex-shrink: 0;
+  width: 240px; /* Fixed spacing */
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 1rem;
-  transition: opacity var(--dur-base) ease;
+  padding: 0 1.5rem;
 }
+
 .brand-slide-inner {
   width: 100%;
   height: 80px;
@@ -835,13 +848,13 @@ a:hover .dept-image {
   justify-content: center;
   background: transparent;
   filter: grayscale(100%);
-  opacity: 0.55;
+  opacity: 0.5;
   transition: all var(--dur-base) ease;
 }
 .brand-slide-inner:hover {
   filter: grayscale(0%);
   opacity: 1;
-  transform: scale(1.05);
+  transform: scale(1.06);
 }
 
 /* ════════════════════════════════════════════════════════════════

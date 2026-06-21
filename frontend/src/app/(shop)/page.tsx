@@ -142,23 +142,8 @@ export default function HomePage() {
   const [slide, setSlide] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  /* Brand Swiper Logic */
-  const [brandIndex, setBrandIndex] = useState(0);
-  const totalBrands = BRANDS.length;
-  const doubleBrands = [...BRANDS, ...BRANDS];
-
-  const nextBrand = useCallback(() => {
-    setBrandIndex((prev) => (prev + 1) % totalBrands);
-  }, [totalBrands]);
-
-  const prevBrand = useCallback(() => {
-    setBrandIndex((prev) => (prev - 1 + totalBrands) % totalBrands);
-  }, [totalBrands]);
-
-  useEffect(() => {
-    const timer = setInterval(nextBrand, 3000);
-    return () => clearInterval(timer);
-  }, [nextBrand]);
+  /* Brand Marquee Logic (seamless scroll) */
+  const marqueeBrands = [...BRANDS, ...BRANDS, ...BRANDS, ...BRANDS];
 
   /* Slider Logic */
   const startTimer = useCallback(() => {
@@ -607,9 +592,9 @@ export default function HomePage() {
       </section>
 
       {/* ══════════════════════════════════════════════════
-          OUR BRANDS SHOWCASE (Auto-play Swiper Slider)
+          OUR BRANDS SHOWCASE (Continuous Smooth Marquee)
       ══════════════════════════════════════════════════ */}
-      <section style={{ padding: '5rem 0', background: 'var(--warm-50)', borderBottom: '3px solid var(--clr-brand)', position: 'relative' }}>
+      <section style={{ padding: '4.5rem 0', background: 'var(--warm-50)', borderBottom: '3px solid var(--clr-brand)', position: 'relative' }}>
         <div className="container-fluid" style={{ overflow: 'hidden' }}>
           <div className="section-header-center" style={{ marginBottom: '2.5rem' }}>
             <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: '1.15rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--clr-text)', margin: 0 }}>
@@ -618,80 +603,19 @@ export default function HomePage() {
             <span className="section-rule" />
           </div>
 
-          <div className="brands-slider-container">
-            {/* Left navigation arrow */}
-            <button
-              aria-label="Previous Brand"
-              onClick={prevBrand}
-              style={{
-                position: 'absolute',
-                left: '0.5rem',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                zIndex: 10,
-                width: '2.25rem',
-                height: '2.25rem',
-                borderRadius: '50%',
-                background: '#fff',
-                border: '1px solid var(--clr-border)',
-                boxShadow: 'var(--shadow-sm)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--clr-text-2)',
-                cursor: 'pointer',
-                transition: 'all 200ms ease',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--clr-brand)'; e.currentTarget.style.color = 'var(--clr-brand)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--clr-border)'; e.currentTarget.style.color = 'var(--clr-text-2)'; }}
-            >
-              <IconChevronLeft />
-            </button>
-
-            {/* Carousel track */}
-            <div className="brands-slider-track-wrap">
-              <div className="brands-slider-track" style={{ '--brand-index': brandIndex } as React.CSSProperties}>
-                {doubleBrands.map((brand, idx) => {
-                  const BrandLogo = brand.render;
-                  return (
-                    <div key={idx} className="brand-slide">
-                      <div className="brand-slide-inner">
-                        <BrandLogo />
-                      </div>
+          <div className="brands-marquee-container">
+            <div className="brands-marquee-track">
+              {marqueeBrands.map((brand, idx) => {
+                const BrandLogo = brand.render;
+                return (
+                  <div key={idx} className="brand-slide">
+                    <div className="brand-slide-inner">
+                      <BrandLogo />
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </div>
-
-            {/* Right navigation arrow */}
-            <button
-              aria-label="Next Brand"
-              onClick={nextBrand}
-              style={{
-                position: 'absolute',
-                right: '0.5rem',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                zIndex: 10,
-                width: '2.25rem',
-                height: '2.25rem',
-                borderRadius: '50%',
-                background: '#fff',
-                border: '1px solid var(--clr-border)',
-                boxShadow: 'var(--shadow-sm)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--clr-text-2)',
-                cursor: 'pointer',
-                transition: 'all 200ms ease',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--clr-brand)'; e.currentTarget.style.color = 'var(--clr-brand)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--clr-border)'; e.currentTarget.style.color = 'var(--clr-text-2)'; }}
-            >
-              <IconChevronRight />
-            </button>
           </div>
         </div>
       </section>
