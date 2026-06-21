@@ -61,19 +61,20 @@ export default function ProductCard({ product, index = 0 }: Props) {
         display: 'flex',
         flexDirection: 'column',
         background: 'var(--clr-surface)',
-        border: '1px solid var(--clr-border-2)',
-        borderRadius: 'var(--r-md)',
+        border: 'none',
+        borderRadius: '0px', // More modern fashion editorial look
+        boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
         overflow: 'hidden',
         animationDelay: `${index * 0.055}s`,
         transition: 'border-color 240ms ease, box-shadow 240ms ease',
       }}
       onMouseEnter={e => {
-        (e.currentTarget as HTMLElement).style.borderColor = 'var(--clr-border)';
-        (e.currentTarget as HTMLElement).style.boxShadow  = 'var(--shadow-md)';
+        (e.currentTarget as HTMLElement).style.boxShadow  = '0 12px 30px rgba(0,0,0,0.08)';
+        (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
       }}
       onMouseLeave={e => {
-        (e.currentTarget as HTMLElement).style.borderColor = 'var(--clr-border-2)';
-        (e.currentTarget as HTMLElement).style.boxShadow  = 'none';
+        (e.currentTarget as HTMLElement).style.boxShadow  = '0 4px 20px rgba(0,0,0,0.04)';
+        (e.currentTarget as HTMLElement).style.transform = 'none';
       }}
     >
       {/* ── Image ───────────────────────────────────────────── */}
@@ -95,7 +96,7 @@ export default function ProductCard({ product, index = 0 }: Props) {
             }}
           >
             <Image
-              src={`/images/prod${(index % 3) + 1}.png`}
+              src={product.images && product.images.length > 0 ? product.images[0] : `/images/prod${(index % 3) + 1}.png`}
               alt={product.name}
               fill
               style={{ objectFit: 'cover' }}
