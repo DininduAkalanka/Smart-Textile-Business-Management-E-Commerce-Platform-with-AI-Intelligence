@@ -73,6 +73,41 @@ const DEPARTMENTS = [
   { id: 'uniforms', label: 'Uniforms', subLabel: 'School & Corporate', href: '/products?category=uniforms', img: '/images/categories/uniforms.jpg' },
 ];
 
+const UNIFORM_SEGMENTS = [
+  {
+    id: 'government-school',
+    label: 'Government School Uniforms',
+    description: 'Standard-approved, durable uniforms meeting all government specifications for primary and secondary schools.',
+    badge: 'Most Ordered',
+    href: '/products?category=uniforms&sub=government-school',
+    bg: 'linear-gradient(155deg, #080808 0%, #1a0000 100%)',
+  },
+  {
+    id: 'private-school',
+    label: 'Private School Uniforms',
+    description: 'Premium-grade fabrics crafted to the exact specifications of leading private schools across Sri Lanka.',
+    badge: 'Premium',
+    href: '/products?category=uniforms&sub=private-school',
+    bg: 'linear-gradient(155deg, #0a0000 0%, #280000 100%)',
+  },
+  {
+    id: 'corporate',
+    label: 'Corporate Office Uniforms',
+    description: 'Polished, professional formal wear for corporate environments — tailored for comfort across long working hours.',
+    badge: '',
+    href: '/products?category=uniforms&sub=corporate',
+    bg: 'linear-gradient(155deg, #00080d 0%, #00141f 100%)',
+  },
+  {
+    id: 'industrial',
+    label: 'Workwear & Industrial',
+    description: 'Heavy-duty fabrics engineered for industrial and workwear applications — built to last in demanding conditions.',
+    badge: '',
+    href: '/products?category=uniforms&sub=industrial',
+    bg: 'linear-gradient(155deg, #060600 0%, #141400 100%)',
+  },
+];
+
 const TRUST_ITEMS = [
   { id: 'delivery', iconPath: 'M5 12h14M12 5l7 7-7 7M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z', title: 'Island-Wide Delivery', body: 'Reliable delivery across all 25 districts. Free on orders above Rs. 5,000.' },
   { id: 'koko', iconPath: 'M9 12l2 2 4-4M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z', title: '3 Split Payments (Koko)', body: 'Buy now, pay later. Divide your order into 3 interest-free installments.' },
@@ -201,24 +236,29 @@ export default function HomePage() {
           background: 'var(--obsidian-950)',
         }}
       >
-        {/* Animated Slide Image wrapper */}
-        <div
-          key={`hero-img-${current.id}`}
-          className="ken-burns"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            zIndex: 0,
-          }}
-        >
-          <Image
-            src={current.image}
-            alt={current.headline}
-            fill
-            style={{ objectFit: 'cover' }}
-            priority
-          />
-        </div>
+        {/* Animated Slide Images with Opacity Cross-Fade */}
+        {HERO_SLIDES.map((slideItem, idx) => (
+          <div
+            key={slideItem.id}
+            className={idx === slide ? "ken-burns" : ""}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 0,
+              opacity: idx === slide ? 1 : 0,
+              transition: 'opacity 1200ms ease-in-out',
+              pointerEvents: idx === slide ? 'auto' : 'none',
+            }}
+          >
+            <Image
+              src={slideItem.image}
+              alt={slideItem.headline}
+              fill
+              style={{ objectFit: 'cover' }}
+              priority={idx === 0}
+            />
+          </div>
+        ))}
 
         {/* Readability Overlay */}
         <div
@@ -480,6 +520,116 @@ export default function HomePage() {
                 </div>
               </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════
+          UNIFORM COLLECTION (Specialist Range)
+      ══════════════════════════════════════════════════ */}
+      <section id="uniforms" style={{ padding: 'var(--space-section) 0', background: 'var(--obsidian-950)' }}>
+        <div className="container">
+          <div className="section-header-center" style={{ marginBottom: '3.5rem' }}>
+            <span className="label-eyebrow" style={{ color: 'rgba(255,255,255,0.4)' }}>Specialist Range</span>
+            <h2 className="heading-xl" style={{ color: '#fff', marginTop: '0.5rem', marginBottom: '1rem' }}>Uniform Collection</h2>
+            <span className="section-rule" style={{ background: 'rgba(255,255,255,0.15)', margin: '0 auto' }} />
+            <p style={{ marginTop: '1.25rem', color: 'rgba(255,255,255,0.45)', fontSize: '0.9rem', lineHeight: 1.75, maxWidth: '520px', marginLeft: 'auto', marginRight: 'auto' }}>
+              Government &amp; private school uniforms, corporate office formal wear, and heavy-duty industrial workwear. Tailored to standard specification with durable, high-performance fabrics.
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+              gap: '1px',
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 'var(--r-md)',
+              overflow: 'hidden',
+            }}
+          >
+            {UNIFORM_SEGMENTS.map((seg, idx) => (
+              <Link
+                key={seg.id}
+                href={seg.href}
+                id={`uniform-${seg.id}`}
+                className="animate-fade-in-up"
+                style={{
+                  display: 'block',
+                  textDecoration: 'none',
+                  background: seg.bg,
+                  padding: '2.5rem 2rem',
+                  transition: 'all 300ms ease',
+                  animationDelay: `${idx * 0.08}s`,
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'var(--obsidian-900)';
+                  e.currentTarget.style.boxShadow = 'inset 0 0 40px rgba(204,0,0,0.15)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = seg.bg;
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                {seg.badge && (
+                  <span
+                    className="badge badge-brand"
+                    style={{ marginBottom: '1.25rem', display: 'inline-flex', background: 'var(--clr-brand)', color: '#fff', fontSize: '0.62rem', padding: '0.2rem 0.5rem', borderRadius: 'var(--r-xs)', fontWeight: 600, fontFamily: 'var(--font-mono)' }}
+                  >
+                    {seg.badge}
+                  </span>
+                )}
+                <h3
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '1.3rem',
+                    fontWeight: 600,
+                    color: '#fff',
+                    lineHeight: 1.25,
+                    marginBottom: '0.75rem',
+                  }}
+                >
+                  {seg.label}
+                </h3>
+                <p
+                  style={{
+                    fontSize: '0.82rem',
+                    lineHeight: 1.7,
+                    color: 'rgba(255,255,255,0.45)',
+                    marginBottom: '1.75rem',
+                  }}
+                >
+                  {seg.description}
+                </p>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.65rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    color: 'var(--clr-brand)',
+                    transition: 'gap 200ms ease',
+                  }}
+                >
+                  Shop Now
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </span>
+              </Link>
+            ))}
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+            <Link href="/products?category=uniforms" id="view-all-uniforms" className="btn btn-ghost-white btn-lg">
+              View Entire Uniform Range
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: '0.5rem' }}><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </Link>
           </div>
         </div>
       </section>

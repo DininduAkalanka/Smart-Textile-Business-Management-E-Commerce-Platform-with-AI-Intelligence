@@ -576,7 +576,7 @@ a:hover .dept-image {
 @keyframes scaleIn   { from { opacity: 0; transform: scale(0.96) }      to { opacity: 1; transform: scale(1) } }
 @keyframes slideLeft { from { opacity: 0; transform: translateX(-20px)} to { opacity: 1; transform: translateX(0) } }
 @keyframes slideRight{ from { opacity: 0; transform: translateX(20px) } to { opacity: 1; transform: translateX(0) } }
-@keyframes marquee   { 0% { transform: translateX(0) } 100% { transform: translateX(-50%) } }
+@keyframes marquee   { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-50%, 0, 0); } }
 
 .animate-fade-in       { animation: fadeIn     var(--dur-slow) var(--ease-out-expo) both; }
 .animate-fade-in-up    { animation: fadeInUp   var(--dur-slow) var(--ease-out-expo) both; }
@@ -707,6 +707,7 @@ a:hover .dept-image {
   display: flex;
   width: max-content;
   animation: marquee 28s linear infinite;
+  will-change: transform;
 }
 .marquee-track:hover { animation-play-state: paused; }
 
@@ -790,8 +791,8 @@ a:hover .dept-image {
    BRANDS MARQUEE (Continuous Smooth Scrolling)
 ════════════════════════════════════════════════════════════════ */
 @keyframes brand-marquee {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
 }
 
 .brands-marquee-container {
@@ -825,6 +826,7 @@ a:hover .dept-image {
   display: flex;
   width: max-content;
   animation: brand-marquee 24s linear infinite;
+  will-change: transform;
 }
 
 .brands-marquee-track:hover {
