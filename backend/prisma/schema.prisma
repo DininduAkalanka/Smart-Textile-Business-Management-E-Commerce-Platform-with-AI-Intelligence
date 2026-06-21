@@ -38,6 +38,12 @@ enum PaymentMethod {
   STRIPE
   PAYHERE
   COD
+  INSTALLMENT
+}
+
+enum PaymentPlan {
+  FULL
+  INSTALLMENT
 }
 
 // ─── Models ──────────────────────────────────────────────
@@ -145,20 +151,42 @@ model OrderItem {
 }
 
 model Payment {
-  id              String        @id @default(uuid()) @db.Uuid
-  orderId         String        @unique @map("order_id") @db.Uuid
-  transactionId   String?       @unique @map("transaction_id")
-  amount          Decimal       @db.Decimal(10, 2)
-  currency        String        @default("USD")
-  status          PaymentStatus @default(PENDING)
-  method          PaymentMethod @default(STRIPE)
-  gatewayResponse Json?         @map("gateway_response")
-  paidAt          DateTime?     @map("paid_at")
-  createdAt       DateTime      @default(now()) @map("created_at")
+  id               String        @id @default(uuid()) @db.Uuid
+  orderId          String        @unique @map("order_id") @db.Uuid
+  transactionId    String?       @unique @map("transaction_id")
+  amount           Decimal       @db.Decimal(10, 2)
+  currency         String        @default("USD")
+  status           PaymentStatus @default(PENDING)
+  method           PaymentMethod @default(STRIPE)
+  paymentPlan      PaymentPlan   @default(FULL) @map("payment_plan")
+  installmentCount Int?          @map("installment_count")
+  gatewayResponse  Json?         @map("gateway_response")
+  paidAt           DateTime?     @map("paid_at")
+  createdAt        DateTime      @default(now()) @map("created_at")
 
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order        Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  installments Installment[]
 
   @@index([orderId])
   @@index([status])
   @@map("payments")
+}
+
+model Installment {
+  id              String        @id @default(uuid()) @db.Uuid
+  paymentId       String        @map("payment_id") @db.Uuid
+  installmentNo   Int           @map("installment_no")
+  amount          Decimal       @db.Decimal(10, 2)
+  dueDate         DateTime      @map("due_date")
+  status          PaymentStatus @default(PENDING)
+  stripePaymentId String?       @map("stripe_payment_id")
+  paidAt          DateTime?     @map("paid_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("installments")
 }

@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { PaymentIntentResponse } from '@/types';
+
+type PaymentPlan = 'FULL' | 'INSTALLMENT';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -14,6 +17,11 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState(1); // 1: Address, 2: Payment, 3: Confirm
+
+  // Payment state
+  const [paymentPlan, setPaymentPlan] = useState<PaymentPlan>('FULL');
+  const [installmentCount, setInstallmentCount] = useState(3);
+  const [stripeConfigured, setStripeConfigured] = useState(false);
 
   const [address, setAddress] = useState({
     fullName: '',
@@ -25,6 +33,13 @@ export default function CheckoutPage() {
     country: 'Sri Lanka',
     phone: '',
   });
+
+  useEffect(() => {
+    // Check if Stripe is configured
+    api.getStripeConfig().then((config) => {
+      setStripeConfigured(config.isConfigured);
+    }).catch(() => {});
+  }, []);
 
   if (items.length === 0) {
     return (
@@ -47,10 +62,15 @@ export default function CheckoutPage() {
     );
   }
 
+  const totalValue = subtotal();
+  const installmentAmount = Math.floor((totalValue * 100) / installmentCount) / 100;
+  const lastInstallmentAmount = Math.round((totalValue - installmentAmount * (installmentCount - 1)) * 100) / 100;
+
   const handlePlaceOrder = async () => {
     setLoading(true);
     setError('');
     try {
+      // 1. Create the order
       const orderData = {
         items: items.map((item) => ({
           productId: item.product.id,
@@ -61,14 +81,34 @@ export default function CheckoutPage() {
 
       const order = await api.createOrder(orderData);
 
-      // Create payment intent
-      await api.createPaymentIntent(order.id);
+      // 2. Create the payment based on the selected plan
+      let paymentResult: PaymentIntentResponse;
 
-      // Simulate payment confirmation (in production, this would be Stripe)
-      await api.confirmPayment(order.id);
+      if (paymentPlan === 'FULL') {
+        paymentResult = await api.createFullPayment(order.id);
+      } else {
+        paymentResult = await api.createInstallmentPayment(order.id, installmentCount);
+      }
+
+      // 3. If Stripe is not configured, simulate confirmation (mock mode)
+      if (!stripeConfigured) {
+        if (paymentPlan === 'FULL') {
+          await api.confirmPayment(order.id);
+        } else {
+          await api.confirmPayment(order.id);
+        }
+      }
+      // If Stripe IS configured, the webhook will confirm the payment after
+      // the user completes the Stripe payment flow.
+      // For now, in mock mode we auto-confirm.
 
       clearCart();
-      router.push(`/orders/${order.id}?success=true`);
+
+      if (paymentPlan === 'INSTALLMENT') {
+        router.push(`/orders/${order.id}/installments?success=true`);
+      } else {
+        router.push(`/orders/${order.id}?success=true`);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to place order');
     } finally {
@@ -82,6 +122,12 @@ export default function CheckoutPage() {
 
   const isAddressValid = address.fullName && address.addressLine1 && address.city && address.state && address.postalCode && address.country;
 
+  const stepLabels = [
+    { num: 1, label: 'Shipping' },
+    { num: 2, label: 'Payment' },
+    { num: 3, label: 'Review & Pay' },
+  ];
+
   return (
     <div className="container" style={{ padding: '2rem 0 4rem' }}>
       <h1 className="font-display" style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '2rem' }}>
@@ -90,11 +136,7 @@ export default function CheckoutPage() {
 
       {/* Progress Steps */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2.5rem' }}>
-        {[
-          { num: 1, label: 'Shipping' },
-          { num: 2, label: 'Review' },
-          { num: 3, label: 'Complete' },
-        ].map((s, i) => (
+        {stepLabels.map((s, i) => (
           <div key={s.num} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <div
               style={{
@@ -130,6 +172,7 @@ export default function CheckoutPage() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '2.5rem', alignItems: 'start' }}>
         {/* Main Content */}
         <div>
+          {/* STEP 1: Shipping Address */}
           {step === 1 && (
             <div className="card" style={{ padding: '2rem' }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1.5rem' }}>Shipping Address</h2>
@@ -176,13 +219,205 @@ export default function CheckoutPage() {
                   onClick={() => setStep(2)}
                   disabled={!isAddressValid}
                 >
+                  Continue to Payment
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: Payment Method Selection */}
+          {step === 2 && (
+            <div>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1.5rem' }}>Choose Payment Method</h2>
+
+              {/* Full Payment Card */}
+              <div
+                className="payment-method-card"
+                data-selected={paymentPlan === 'FULL'}
+                onClick={() => setPaymentPlan('FULL')}
+                style={{
+                  border: paymentPlan === 'FULL' ? '2px solid var(--clr-brand)' : '1.5px solid var(--clr-border)',
+                  borderRadius: 'var(--r-lg)',
+                  padding: '1.5rem',
+                  marginBottom: '1rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.25s ease',
+                  background: paymentPlan === 'FULL' ? 'var(--clr-brand-tint)' : 'var(--clr-surface)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{
+                    width: '3rem', height: '3rem', borderRadius: 'var(--r-md)',
+                    background: paymentPlan === 'FULL' ? 'var(--clr-brand)' : 'var(--clr-surface-3)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '1.25rem',
+                    transition: 'all 0.25s ease',
+                  }}>
+                    {paymentPlan === 'FULL' ? '✓' : '💳'}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h3 style={{ fontSize: '1.0625rem', fontWeight: 600, color: 'var(--clr-text)' }}>
+                        Full Payment
+                      </h3>
+                      {paymentPlan === 'FULL' && (
+                        <span className="badge badge-brand" style={{ fontSize: '0.6rem' }}>SELECTED</span>
+                      )}
+                    </div>
+                    <p style={{ fontSize: '0.8125rem', color: 'var(--clr-text-2)', marginTop: '0.25rem' }}>
+                      Pay the entire amount at once
+                    </p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: '1.375rem', fontWeight: 700, color: 'var(--clr-text)' }}>${totalValue.toFixed(2)}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--clr-text-3)' }}>One-time</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Installment Payment Card */}
+              <div
+                className="payment-method-card"
+                data-selected={paymentPlan === 'INSTALLMENT'}
+                onClick={() => setPaymentPlan('INSTALLMENT')}
+                style={{
+                  border: paymentPlan === 'INSTALLMENT' ? '2px solid var(--clr-brand)' : '1.5px solid var(--clr-border)',
+                  borderRadius: 'var(--r-lg)',
+                  padding: '1.5rem',
+                  marginBottom: '1rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.25s ease',
+                  background: paymentPlan === 'INSTALLMENT' ? 'var(--clr-brand-tint)' : 'var(--clr-surface)',
+                  position: 'relative',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{
+                    width: '3rem', height: '3rem', borderRadius: 'var(--r-md)',
+                    background: paymentPlan === 'INSTALLMENT' ? 'var(--clr-brand)' : 'var(--clr-surface-3)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '1.25rem',
+                    transition: 'all 0.25s ease',
+                  }}>
+                    {paymentPlan === 'INSTALLMENT' ? '✓' : '📅'}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h3 style={{ fontSize: '1.0625rem', fontWeight: 600, color: 'var(--clr-text)' }}>
+                        Pay in Installments
+                      </h3>
+                      {paymentPlan === 'INSTALLMENT' && (
+                        <span className="badge badge-brand" style={{ fontSize: '0.6rem' }}>SELECTED</span>
+                      )}
+                    </div>
+                    <p style={{ fontSize: '0.8125rem', color: 'var(--clr-text-2)', marginTop: '0.25rem' }}>
+                      Split your payment into equal monthly parts — no interest
+                    </p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: '1.375rem', fontWeight: 700, color: 'var(--clr-text)' }}>
+                      ${installmentAmount.toFixed(2)}<span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--clr-text-3)' }}>/mo</span>
+                    </p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--clr-text-3)' }}>{installmentCount} payments</p>
+                  </div>
+                </div>
+
+                {/* Installment Count Selector — only visible when selected */}
+                {paymentPlan === 'INSTALLMENT' && (
+                  <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--clr-border-2)' }}>
+                    <p style={{ fontSize: '0.8125rem', fontWeight: 500, color: 'var(--clr-text-2)', marginBottom: '0.75rem' }}>
+                      Number of installments:
+                    </p>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      {[2, 3, 4].map((num) => (
+                        <button
+                          key={num}
+                          onClick={(e) => { e.stopPropagation(); setInstallmentCount(num); }}
+                          className={`btn ${installmentCount === num ? 'btn-primary' : 'btn-outline'}`}
+                          style={{
+                            flex: 1,
+                            padding: '0.75rem',
+                            borderRadius: 'var(--r-md)',
+                          }}
+                        >
+                          {num}× payments
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Installment Breakdown */}
+                    <div style={{
+                      marginTop: '1rem',
+                      background: 'var(--clr-surface-2)',
+                      borderRadius: 'var(--r-md)',
+                      padding: '1rem',
+                    }}>
+                      <p style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--clr-text-3)', marginBottom: '0.75rem' }}>
+                        Payment Schedule
+                      </p>
+                      {Array.from({ length: installmentCount }).map((_, i) => {
+                        const date = new Date();
+                        date.setMonth(date.getMonth() + i);
+                        const amount = i === installmentCount - 1 ? lastInstallmentAmount : installmentAmount;
+                        return (
+                          <div key={i} style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '0.5rem 0',
+                            borderBottom: i < installmentCount - 1 ? '1px solid var(--clr-border-2)' : 'none',
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                              <div style={{
+                                width: '1.5rem', height: '1.5rem', borderRadius: '50%',
+                                background: i === 0 ? 'var(--clr-brand)' : 'var(--clr-border)',
+                                color: i === 0 ? '#fff' : 'var(--clr-text-3)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: '0.625rem', fontWeight: 700,
+                              }}>
+                                {i + 1}
+                              </div>
+                              <div>
+                                <p style={{ fontSize: '0.8125rem', fontWeight: 500, color: 'var(--clr-text)' }}>
+                                  {i === 0 ? 'Due today' : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                </p>
+                              </div>
+                            </div>
+                            <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--clr-text)' }}>
+                              ${amount.toFixed(2)}
+                            </p>
+                          </div>
+                        );
+                      })}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.75rem', paddingTop: '0.5rem', borderTop: '2px solid var(--clr-border)' }}>
+                        <p style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--clr-text-2)' }}>Total</p>
+                        <p style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--clr-text)' }}>${totalValue.toFixed(2)}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Navigation Buttons */}
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+                <button className="btn btn-outline btn-lg" onClick={() => setStep(1)}>
+                  ← Back
+                </button>
+                <button
+                  className="btn btn-primary btn-lg"
+                  style={{ flex: 1 }}
+                  onClick={() => setStep(3)}
+                >
                   Continue to Review
                 </button>
               </div>
             </div>
           )}
 
-          {step === 2 && (
+          {/* STEP 3: Review & Confirm */}
+          {step === 3 && (
             <div>
               {/* Address Review */}
               <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
@@ -199,6 +434,37 @@ export default function CheckoutPage() {
                 </p>
               </div>
 
+              {/* Payment Method Review */}
+              <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Payment Method</h3>
+                  <button onClick={() => setStep(2)} className="btn btn-outline btn-sm">Change</button>
+                </div>
+                {paymentPlan === 'FULL' ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ fontSize: '1.5rem' }}>💳</span>
+                    <div>
+                      <p style={{ fontSize: '0.9375rem', fontWeight: 500, color: 'var(--clr-text)' }}>Full Payment</p>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--clr-text-2)' }}>
+                        One-time payment of <strong>${totalValue.toFixed(2)}</strong>
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ fontSize: '1.5rem' }}>📅</span>
+                    <div>
+                      <p style={{ fontSize: '0.9375rem', fontWeight: 500, color: 'var(--clr-text)' }}>
+                        {installmentCount}× Installment Plan
+                      </p>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--clr-text-2)' }}>
+                        ${installmentAmount.toFixed(2)}/month — First payment today, no interest
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Items Review */}
               <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Order Items</h3>
@@ -213,14 +479,25 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
-              <button
-                className="btn btn-primary btn-lg"
-                style={{ width: '100%' }}
-                onClick={handlePlaceOrder}
-                disabled={loading}
-              >
-                {loading ? 'Processing Payment...' : `Place Order — $${subtotal().toFixed(2)}`}
-              </button>
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button className="btn btn-outline btn-lg" onClick={() => setStep(2)}>
+                  ← Back
+                </button>
+                <button
+                  className="btn btn-primary btn-lg"
+                  style={{ flex: 1 }}
+                  onClick={handlePlaceOrder}
+                  disabled={loading}
+                >
+                  {loading
+                    ? 'Processing Payment...'
+                    : paymentPlan === 'FULL'
+                    ? `Pay Now — $${totalValue.toFixed(2)}`
+                    : `Pay First Installment — $${installmentAmount.toFixed(2)}`
+                  }
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -250,7 +527,7 @@ export default function CheckoutPage() {
           <div style={{ borderTop: '1px solid var(--color-border-light)', paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9375rem' }}>
               <span style={{ color: 'var(--color-text-muted)' }}>Subtotal</span>
-              <span>${subtotal().toFixed(2)}</span>
+              <span>${totalValue.toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9375rem' }}>
               <span style={{ color: 'var(--color-text-muted)' }}>Shipping</span>
@@ -260,8 +537,34 @@ export default function CheckoutPage() {
 
           <div style={{ borderTop: '2px solid var(--color-border)', marginTop: '1rem', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between', fontSize: '1.125rem', fontWeight: 700 }}>
             <span>Total</span>
-            <span>${subtotal().toFixed(2)}</span>
+            <span>${totalValue.toFixed(2)}</span>
           </div>
+
+          {/* Payment plan badge in sidebar */}
+          {step >= 2 && (
+            <div style={{
+              marginTop: '1rem',
+              padding: '0.75rem',
+              borderRadius: 'var(--r-md)',
+              background: paymentPlan === 'FULL' ? '#f0fdf4' : '#eff6ff',
+              border: paymentPlan === 'FULL' ? '1px solid #bbf7d0' : '1px solid #bfdbfe',
+            }}>
+              {paymentPlan === 'FULL' ? (
+                <p style={{ fontSize: '0.8125rem', color: '#166534', fontWeight: 500 }}>
+                  💳 Full payment of ${totalValue.toFixed(2)}
+                </p>
+              ) : (
+                <div>
+                  <p style={{ fontSize: '0.8125rem', color: '#1e40af', fontWeight: 500 }}>
+                    📅 {installmentCount}× Installment Plan
+                  </p>
+                  <p style={{ fontSize: '0.75rem', color: '#3b82f6', marginTop: '0.25rem' }}>
+                    ${installmentAmount.toFixed(2)}/mo — Due today: ${installmentAmount.toFixed(2)}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
