@@ -79,11 +79,51 @@ const TRUST_ITEMS = [
   { id: 'returns', iconPath: 'M3 2v6h6M3 8C4.657 4.953 8.045 3 12 3c4.418 0 8 3.582 8 8s-3.582 8-8 8c-3.566 0-6.618-2.167-7.747-5.25', title: 'Easy 7-Day Returns', body: 'Wrong size or fit? Exchange locally or ship back within 7 days.' },
 ];
 
-const OUTLETS = [
-  { name: 'Colombo Maharagama Outlet', address: '142 High Level Road, Maharagama', phone: '+94 11 284 0987', hours: '9:00 AM - 9:00 PM' },
-  { name: 'Pettah Main Branch', address: '85 Main Street, Colombo 11', phone: '+94 11 232 4567', hours: '9:00 AM - 7:30 PM' },
-  { name: 'Kandy City Center Outlet', address: '48 Dalada Veediya, Kandy', phone: '+94 81 223 9876', hours: '9:00 AM - 8:30 PM' },
-  { name: 'Galle Beach Road Outlet', address: '62 Colombo Road, Galle', phone: '+94 91 224 5678', hours: '9:00 AM - 8:00 PM' },
+/* ── Brand Logos SVGs ───────────────────────────────────────── */
+const LogoAivo = () => (
+  <svg width="140" height="50" viewBox="0 0 140 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M22 10L24.5 22L36 24.5L24.5 27L22 38.5L19.5 27L8 24.5L19.5 22L22 10Z" fill="#0083c4" stroke="#0083c4" strokeWidth="1.5" strokeLinejoin="round"/>
+    <path d="M16 16L18 23L25 25L18 27L16 34L14 27L7 25L14 23L16 16Z" fill="#fff"/>
+    <text x="44" y="28" fontFamily="var(--font-sans)" fontSize="20" fontWeight="700" fill="#0083c4" letterSpacing="-0.02em">Aivo</text>
+    <text x="44" y="38" fontFamily="var(--font-mono)" fontSize="6" fontWeight="600" fill="#a8a8a8" letterSpacing="0.18em">SPECIAL GUEST</text>
+  </svg>
+);
+
+const LogoUSPolo = () => (
+  <svg width="140" height="50" viewBox="0 0 140 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M22 8C22 8 20.5 10 19 11.5C18 12.5 17 14 17.5 15.5C18 17 19.5 18 20.5 19C21 19.5 21.5 20.5 21.5 21.5C21.5 23 20 24.5 19 25.5C18.5 26 18 27 18.5 28C19 29 20.5 29.5 21.5 29.5C23 29.5 24 28 24.5 27C25 26 26.5 25 26 23C25.5 21 24.5 19 24.5 18.5C24.5 18 25 17.5 25.5 17.5C26 17.5 27 18 27.5 18.5C28.5 19.5 29 21.5 30 22C30.5 22.5 31.5 21.5 31 20.5C30.5 19.5 29 17 28 15.5C27 14 25.5 12 25.5 11.5C25.5 11 26 10.5 26.5 10.5C27 10.5 28.5 12 29 12.5C29.5 13 30.5 12.5 30 11.5C29.5 10.5 27.5 8 26.5 7C25.5 6 24 5 23 5C22 5 22 8 22 8Z" fill="#1d2e5a"/>
+    <text x="36" y="24" fontFamily="var(--font-serif)" fontSize="12" fontWeight="700" fill="#1d2e5a" letterSpacing="0.05em">U.S. POLO ASSN.</text>
+    <text x="36" y="32" fontFamily="var(--font-mono)" fontSize="5.5" fontWeight="500" fill="#a8a8a8" letterSpacing="0.1em">SINCE 1890</text>
+  </svg>
+);
+
+const LogoGiggles = () => (
+  <svg width="140" height="50" viewBox="0 0 140 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <text x="14" y="30" fontFamily="var(--font-sans)" fontSize="26" fontWeight="800" fill="#b0268d" letterSpacing="-0.04em">Giggles</text>
+    <text x="16" y="40" fontFamily="var(--font-mono)" fontSize="5.5" fontWeight="600" fill="#a8a8a8" letterSpacing="0.1em">INFANT COLLECTION</text>
+  </svg>
+);
+
+const LogoFlipFlop = () => (
+  <svg width="140" height="50" viewBox="0 0 140 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <text x="16" y="30" fontFamily="var(--font-sans)" fontSize="22" fontWeight="700" fill="#0b7a8d" letterSpacing="0.02em">Flip Flop</text>
+    <text x="18" y="38" fontFamily="var(--font-mono)" fontSize="5.5" fontWeight="500" fill="#a8a8a8" letterSpacing="0.08em">CASUAL FOOTWEAR</text>
+  </svg>
+);
+
+const LogoEthnicFusion = () => (
+  <svg width="150" height="50" viewBox="0 0 150 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="5" y="5" width="140" height="40" fill="#091428" rx="2"/>
+    <text x="16" y="29" fontFamily="var(--font-serif)" fontSize="15" fontStyle="italic" fill="#e8c84a" letterSpacing="0.04em">Ethnic Fusion</text>
+  </svg>
+);
+
+const BRANDS = [
+  { name: 'Aivo', render: LogoAivo },
+  { name: 'U.S. Polo Assn.', render: LogoUSPolo },
+  { name: 'Giggles', render: LogoGiggles },
+  { name: 'Flip Flop', render: LogoFlipFlop },
+  { name: 'Ethnic Fusion', render: LogoEthnicFusion },
 ];
 
 const MARQUEE_ITEMS = [
@@ -101,6 +141,24 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState<'new' | 'trending' | 'premium'>('new');
   const [slide, setSlide] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  /* Brand Swiper Logic */
+  const [brandIndex, setBrandIndex] = useState(0);
+  const totalBrands = BRANDS.length;
+  const doubleBrands = [...BRANDS, ...BRANDS];
+
+  const nextBrand = useCallback(() => {
+    setBrandIndex((prev) => (prev + 1) % totalBrands);
+  }, [totalBrands]);
+
+  const prevBrand = useCallback(() => {
+    setBrandIndex((prev) => (prev - 1 + totalBrands) % totalBrands);
+  }, [totalBrands]);
+
+  useEffect(() => {
+    const timer = setInterval(nextBrand, 3000);
+    return () => clearInterval(timer);
+  }, [nextBrand]);
 
   /* Slider Logic */
   const startTimer = useCallback(() => {
@@ -549,57 +607,91 @@ export default function HomePage() {
       </section>
 
       {/* ══════════════════════════════════════════════════
-          LOCAL OUTLET LOCATOR SECTION
+          OUR BRANDS SHOWCASE (Auto-play Swiper Slider)
       ══════════════════════════════════════════════════ */}
-      <section style={{ padding: '5rem 0', background: 'var(--warm-50)' }}>
-        <div className="container">
-          <div className="section-header-center">
-            <span className="label-eyebrow">Outlets</span>
-            <h2 className="heading-xl">Our Retail Network</h2>
+      <section style={{ padding: '5rem 0', background: 'var(--warm-50)', borderBottom: '3px solid var(--clr-brand)', position: 'relative' }}>
+        <div className="container-fluid" style={{ overflow: 'hidden' }}>
+          <div className="section-header-center" style={{ marginBottom: '2.5rem' }}>
+            <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: '1.15rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--clr-text)', margin: 0 }}>
+              Our Brands
+            </h2>
             <span className="section-rule" />
-            <p style={{ fontSize: '0.875rem', color: 'var(--clr-text-2)', marginTop: '1rem', maxWidth: '480px' }}>
-              Prefer to touch and inspect fabric? Visit one of our 4 physical branches across Sri Lanka for customized assistance.
-            </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem' }}>
-            {OUTLETS.map(outlet => (
-              <div
-                key={outlet.name}
-                style={{
-                  background: '#fff',
-                  border: '1px solid var(--clr-border)',
-                  borderRadius: 'var(--r-md)',
-                  padding: '2rem 1.75rem',
-                  boxShadow: 'var(--shadow-xs)',
-                  transition: 'all 200ms ease',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--clr-brand)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--clr-border)'; e.currentTarget.style.boxShadow = 'var(--shadow-xs)'; }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', color: 'var(--clr-brand)', marginBottom: '1rem' }}>
-                  <IconStore />
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600 }}>Active Outlet</span>
-                </div>
-                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', color: 'var(--clr-text)', fontWeight: 600, marginBottom: '0.5rem' }}>
-                  {outlet.name}
-                </h3>
-                <p style={{ fontSize: '0.8rem', color: 'var(--clr-text-2)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
-                  {outlet.address}
-                </p>
+          <div className="brands-slider-container">
+            {/* Left navigation arrow */}
+            <button
+              aria-label="Previous Brand"
+              onClick={prevBrand}
+              style={{
+                position: 'absolute',
+                left: '0.5rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 10,
+                width: '2.25rem',
+                height: '2.25rem',
+                borderRadius: '50%',
+                background: '#fff',
+                border: '1px solid var(--clr-border)',
+                boxShadow: 'var(--shadow-sm)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--clr-text-2)',
+                cursor: 'pointer',
+                transition: 'all 200ms ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--clr-brand)'; e.currentTarget.style.color = 'var(--clr-brand)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--clr-border)'; e.currentTarget.style.color = 'var(--clr-text-2)'; }}
+            >
+              <IconChevronLeft />
+            </button>
 
-                <div style={{ borderTop: '1px solid var(--clr-border-2)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem' }}>
-                    <span style={{ color: 'var(--clr-text-3)' }}>Call:</span>
-                    <a href={`tel:${outlet.phone.replace(/\s+/g, '')}`} style={{ color: 'var(--clr-text)', fontWeight: 500 }}>{outlet.phone}</a>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem' }}>
-                    <span style={{ color: 'var(--clr-text-3)' }}>Hours:</span>
-                    <span style={{ color: 'var(--clr-text-2)' }}>{outlet.hours}</span>
-                  </div>
-                </div>
+            {/* Carousel track */}
+            <div className="brands-slider-track-wrap">
+              <div className="brands-slider-track" style={{ '--brand-index': brandIndex } as React.CSSProperties}>
+                {doubleBrands.map((brand, idx) => {
+                  const BrandLogo = brand.render;
+                  return (
+                    <div key={idx} className="brand-slide">
+                      <div className="brand-slide-inner">
+                        <BrandLogo />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
+            </div>
+
+            {/* Right navigation arrow */}
+            <button
+              aria-label="Next Brand"
+              onClick={nextBrand}
+              style={{
+                position: 'absolute',
+                right: '0.5rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 10,
+                width: '2.25rem',
+                height: '2.25rem',
+                borderRadius: '50%',
+                background: '#fff',
+                border: '1px solid var(--clr-border)',
+                boxShadow: 'var(--shadow-sm)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--clr-text-2)',
+                cursor: 'pointer',
+                transition: 'all 200ms ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--clr-brand)'; e.currentTarget.style.color = 'var(--clr-brand)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--clr-border)'; e.currentTarget.style.color = 'var(--clr-text-2)'; }}
+            >
+              <IconChevronRight />
+            </button>
           </div>
         </div>
       </section>
