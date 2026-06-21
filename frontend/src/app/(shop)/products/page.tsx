@@ -16,6 +16,7 @@ function ProductsContent() {
   const [filters, setFilters] = useState({
     search: searchParams.get('search') || '',
     categoryId: searchParams.get('categoryId') || '',
+    categorySlug: searchParams.get('category') || '',
     sortBy: 'createdAt',
     sortOrder: 'desc' as 'asc' | 'desc',
     minPrice: '',
@@ -32,6 +33,7 @@ function ProductsContent() {
         limit: 12,
         search: filters.search || undefined,
         categoryId: filters.categoryId || undefined,
+        categorySlug: filters.categorySlug || undefined,
         minPrice: filters.minPrice ? Number(filters.minPrice) : undefined,
         maxPrice: filters.maxPrice ? Number(filters.maxPrice) : undefined,
         sortBy: filters.sortBy,
@@ -52,7 +54,7 @@ function ProductsContent() {
 
   useEffect(() => {
     loadProducts(page);
-  }, [page, filters.categoryId, filters.sortBy, filters.sortOrder]);
+  }, [page, filters.categoryId, filters.categorySlug, filters.sortBy, filters.sortOrder]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,12 +96,12 @@ function ProductsContent() {
               <label className="input-label">Category</label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
                 <button
-                  onClick={() => { setFilters({ ...filters, categoryId: '' }); setPage(1); }}
+                  onClick={() => { setFilters({ ...filters, categoryId: '', categorySlug: '' }); setPage(1); }}
                   style={{
                     textAlign: 'left',
                     padding: '0.5rem 0.75rem',
-                    background: !filters.categoryId ? 'var(--color-accent)' : 'transparent',
-                    color: !filters.categoryId ? 'white' : 'var(--color-text)',
+                    background: (!filters.categoryId && !filters.categorySlug) ? 'var(--color-accent)' : 'transparent',
+                    color: (!filters.categoryId && !filters.categorySlug) ? 'white' : 'var(--color-text)',
                     border: 'none',
                     borderRadius: '0.375rem',
                     fontSize: '0.875rem',
@@ -112,12 +114,12 @@ function ProductsContent() {
                 {categories.map((cat) => (
                   <button
                     key={cat.id}
-                    onClick={() => { setFilters({ ...filters, categoryId: cat.id }); setPage(1); }}
+                    onClick={() => { setFilters({ ...filters, categoryId: cat.id, categorySlug: '' }); setPage(1); }}
                     style={{
                       textAlign: 'left',
                       padding: '0.5rem 0.75rem',
-                      background: filters.categoryId === cat.id ? 'var(--color-accent)' : 'transparent',
-                      color: filters.categoryId === cat.id ? 'white' : 'var(--color-text)',
+                      background: (filters.categoryId === cat.id || filters.categorySlug === cat.slug) ? 'var(--color-accent)' : 'transparent',
+                      color: (filters.categoryId === cat.id || filters.categorySlug === cat.slug) ? 'white' : 'var(--color-text)',
                       border: 'none',
                       borderRadius: '0.375rem',
                       fontSize: '0.875rem',

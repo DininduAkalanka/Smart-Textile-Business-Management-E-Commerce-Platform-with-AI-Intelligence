@@ -69,6 +69,7 @@ class ApiClient {
     limit?: number;
     search?: string;
     categoryId?: string;
+    categorySlug?: string;
     minPrice?: number;
     maxPrice?: number;
     sortBy?: string;
