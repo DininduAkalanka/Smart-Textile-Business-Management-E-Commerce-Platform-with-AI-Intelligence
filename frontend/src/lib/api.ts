@@ -1,4 +1,4 @@
-import { ApiResponse, AuthResponse, ProductsResponse, Product, OrdersResponse, Order, Category } from '@/types';
+import { ApiResponse, AuthResponse, ProductsResponse, Product, OrdersResponse, Order, Category, PaymentIntentResponse, InstallmentSchedule } from '@/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
@@ -167,11 +167,36 @@ class ApiClient {
 
   // ─── Payments ─────────────────────────────────────────
 
-  async createPaymentIntent(orderId: string) {
-    return this.request('/payments/create-intent', {
+  async getStripeConfig(): Promise<{ publishableKey: string | null; isConfigured: boolean }> {
+    return this.request('/payments/config');
+  }
+
+  async createFullPayment(orderId: string): Promise<PaymentIntentResponse> {
+    return this.request<PaymentIntentResponse>('/payments/full', {
       method: 'POST',
       body: JSON.stringify({ orderId }),
     });
+  }
+
+  async createInstallmentPayment(orderId: string, installmentCount: number): Promise<PaymentIntentResponse> {
+    return this.request<PaymentIntentResponse>('/payments/installment', {
+      method: 'POST',
+      body: JSON.stringify({ orderId, installmentCount }),
+    });
+  }
+
+  async payInstallment(installmentId: string): Promise<{ installmentId: string; installmentNo: number; amount: number; clientSecret: string }> {
+    return this.request(`/payments/installment/${installmentId}/pay`, {
+      method: 'POST',
+    });
+  }
+
+  async getPayment(orderId: string) {
+    return this.request(`/payments/${orderId}`);
+  }
+
+  async getInstallmentSchedule(orderId: string): Promise<InstallmentSchedule> {
+    return this.request<InstallmentSchedule>(`/payments/${orderId}/installments`);
   }
 
   async confirmPayment(orderId: string) {
@@ -180,9 +205,12 @@ class ApiClient {
     });
   }
 
-  async getPayment(orderId: string) {
-    return this.request(`/payments/${orderId}`);
+  async confirmInstallment(installmentId: string) {
+    return this.request(`/payments/confirm-installment/${installmentId}`, {
+      method: 'POST',
+    });
   }
 }
 
 export const api = new ApiClient();
+

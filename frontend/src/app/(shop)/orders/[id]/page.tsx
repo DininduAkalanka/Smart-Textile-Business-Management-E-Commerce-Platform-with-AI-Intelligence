@@ -171,11 +171,22 @@ function OrderDetailContent() {
             <div style={{ padding: '1rem', background: 'var(--color-border-light)', borderRadius: '0.5rem' }}>
               <p style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem' }}>Payment</p>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{order.payment.method}</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                  {order.payment.method === 'INSTALLMENT' ? '📅 Installment Plan' : '💳 ' + order.payment.method}
+                </span>
                 <span className={`badge ${order.payment.status === 'COMPLETED' ? 'badge-success' : 'badge-warning'}`}>
                   {order.payment.status}
                 </span>
               </div>
+              {order.payment.paymentPlan === 'INSTALLMENT' && (
+                <Link
+                  href={`/orders/${id}/installments`}
+                  className="btn btn-outline-brand btn-sm"
+                  style={{ width: '100%', marginTop: '0.75rem', textAlign: 'center' }}
+                >
+                  View Installment Schedule →
+                </Link>
+              )}
             </div>
           )}
 

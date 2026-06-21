@@ -84,9 +84,48 @@ export interface Payment {
   amount: number;
   currency: string;
   status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
-  method: 'STRIPE' | 'PAYHERE' | 'COD';
+  method: 'STRIPE' | 'PAYHERE' | 'COD' | 'INSTALLMENT';
+  paymentPlan: 'FULL' | 'INSTALLMENT';
+  installmentCount?: number;
   paidAt?: string;
   createdAt: string;
+  installments?: Installment[];
+}
+
+export interface Installment {
+  id: string;
+  paymentId?: string;
+  installmentNo: number;
+  amount: number;
+  dueDate: string;
+  status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
+  stripePaymentId?: string;
+  paidAt?: string;
+  createdAt?: string;
+}
+
+export interface InstallmentSchedule {
+  paymentId: string;
+  orderId: string;
+  orderNumber: string;
+  totalAmount: number;
+  paymentPlan: 'FULL' | 'INSTALLMENT';
+  installmentCount: number;
+  overallStatus: string;
+  installments: Installment[];
+}
+
+export interface PaymentIntentResponse {
+  paymentId: string;
+  orderId: string;
+  amount: number;
+  currency: string;
+  status: string;
+  paymentPlan: 'FULL' | 'INSTALLMENT';
+  clientSecret: string;
+  installmentCount?: number;
+  firstInstallmentAmount?: number;
+  installments?: Installment[];
 }
 
 export interface Address {
