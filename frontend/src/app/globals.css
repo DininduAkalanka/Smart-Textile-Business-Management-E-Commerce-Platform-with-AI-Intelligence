@@ -522,6 +522,36 @@ button { cursor: pointer; border: none; background: none; }
   animation: shimmer 1.6s infinite linear;
   border-radius: var(--r-md);
 }
+.skeleton-product-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--clr-surface);
+  border: none;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  padding: 0;
+  overflow: hidden;
+}
+.skeleton-image {
+  aspect-ratio: 3/4;
+  background: linear-gradient(90deg, var(--warm-100) 25%, var(--warm-200) 50%, var(--warm-100) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+.skeleton-info {
+  padding: 1.125rem 1.125rem 1.25rem;
+}
+.skeleton-line {
+  background: linear-gradient(90deg, var(--warm-100) 25%, var(--warm-200) 50%, var(--warm-100) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s infinite linear;
+  height: 0.75rem;
+  border-radius: var(--r-xs);
+  margin-bottom: 0.625rem;
+}
+.skeleton-line.tag { height: 0.5rem; width: 30%; }
+.skeleton-line.title-1 { height: 0.875rem; width: 85%; }
+.skeleton-line.title-2 { height: 0.875rem; width: 60%; }
+.skeleton-line.price { height: 1rem; width: 45%; margin-top: 0.75rem; margin-bottom: 0; }
 
 /* ════════════════════════════════════════════════════════════════
    ANIMATIONS

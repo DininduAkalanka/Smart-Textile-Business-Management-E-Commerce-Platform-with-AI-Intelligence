@@ -70,6 +70,7 @@ class ApiClient {
     search?: string;
     categoryId?: string;
     categorySlug?: string;
+    subCategory?: string;
     minPrice?: number;
     maxPrice?: number;
     sortBy?: string;

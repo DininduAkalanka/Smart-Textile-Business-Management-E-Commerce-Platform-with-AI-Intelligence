@@ -1,164 +1,236 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { Product, Category } from '@/types';
 import ProductCard from '@/components/products/ProductCard';
 
 function ProductsContent() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // Read URL search parameters directly (source of truth)
+  const search = searchParams.get('search') || '';
+  const categoryId = searchParams.get('categoryId') || '';
+  const categorySlug = searchParams.get('category') || '';
+  const subCategory = searchParams.get('sub') || '';
+  const sortBy = searchParams.get('sortBy') || 'createdAt';
+  const sortOrder = (searchParams.get('sortOrder') || 'desc') as 'asc' | 'desc';
+  const minPrice = searchParams.get('minPrice') || '';
+  const maxPrice = searchParams.get('maxPrice') || '';
+  const pageParam = searchParams.get('page') || '1';
+  const page = parseInt(pageParam, 10) || 1;
+
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
 
-  const [filters, setFilters] = useState({
-    search: searchParams.get('search') || '',
-    categoryId: searchParams.get('categoryId') || '',
-    categorySlug: searchParams.get('category') || '',
-    sortBy: 'createdAt',
-    sortOrder: 'desc' as 'asc' | 'desc',
-    minPrice: '',
-    maxPrice: '',
-  });
+  // Draft local state for inputs so typing doesn't trigger API requests immediately
+  const [searchDraft, setSearchDraft] = useState(search);
+  const [minPriceDraft, setMinPriceDraft] = useState(minPrice);
+  const [maxPriceDraft, setMaxPriceDraft] = useState(maxPrice);
 
-  const [page, setPage] = useState(1);
+  // Sync draft states when URL changes
+  useEffect(() => { setSearchDraft(search); }, [search]);
+  useEffect(() => { setMinPriceDraft(minPrice); }, [minPrice]);
+  useEffect(() => { setMaxPriceDraft(maxPrice); }, [maxPrice]);
 
-  const loadProducts = async (currentPage = 1) => {
-    setLoading(true);
-    try {
-      const res = await api.getProducts({
-        page: currentPage,
-        limit: 12,
-        search: filters.search || undefined,
-        categoryId: filters.categoryId || undefined,
-        categorySlug: filters.categorySlug || undefined,
-        minPrice: filters.minPrice ? Number(filters.minPrice) : undefined,
-        maxPrice: filters.maxPrice ? Number(filters.maxPrice) : undefined,
-        sortBy: filters.sortBy,
-        sortOrder: filters.sortOrder,
-      });
-      setProducts(res.products || []);
-      setPagination(res.pagination);
-    } catch (error) {
-      console.error('Failed to load products:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Load categories on mount
   useEffect(() => {
     api.getCategories().then(setCategories).catch(console.error);
   }, []);
 
+  // Fetch products whenever any URL query parameter changes
   useEffect(() => {
-    loadProducts(page);
-  }, [page, filters.categoryId, filters.categorySlug, filters.sortBy, filters.sortOrder]);
+    let active = true;
+    setLoading(true);
+    
+    api.getProducts({
+      page,
+      limit: 12,
+      search: search || undefined,
+      categoryId: categoryId || undefined,
+      categorySlug: categorySlug || undefined,
+      subCategory: subCategory || undefined,
+      minPrice: minPrice ? Number(minPrice) : undefined,
+      maxPrice: maxPrice ? Number(maxPrice) : undefined,
+      sortBy,
+      sortOrder,
+    }).then((res) => {
+      if (active) {
+        setProducts(res.products || []);
+        setPagination(res.pagination);
+        setLoading(false);
+      }
+    }).catch((err) => {
+      console.error('Failed to load products:', err);
+      if (active) setLoading(false);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [page, search, categoryId, categorySlug, subCategory, minPrice, maxPrice, sortBy, sortOrder]);
+
+  // Push new parameters to URL
+  const updateFilters = (newParams: Record<string, string | number | null | undefined>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value === null || value === undefined || value === '') {
+        params.delete(key);
+      } else {
+        params.set(key, String(value));
+      }
+    });
+
+    // Reset page to 1 when filters change (unless updating page itself)
+    if (!('page' in newParams)) {
+      params.delete('page');
+    }
+
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setPage(1);
-    loadProducts(1);
+    updateFilters({ search: searchDraft });
   };
 
   return (
-    <div style={{ padding: '2rem 0 4rem' }}>
+    <div style={{ padding: '2.5rem 0 5rem' }}>
       <div className="container">
         {/* Header */}
-        <div style={{ marginBottom: '2rem' }}>
-          <h1 className="font-display" style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-            Our Products
+        <div style={{ marginBottom: '2.5rem' }}>
+          <h1 className="font-display" style={{ fontSize: '2.25rem', fontWeight: 600, marginBottom: '0.5rem', letterSpacing: '-0.01em' }}>
+            Our Collection
           </h1>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>
-            Browse our curated collection of premium quality fabrics
+          <p style={{ color: 'var(--clr-text-3)', fontSize: '0.9rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>
+            Browse through our premium, curated fashion articles
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '2.5rem', flexWrap: 'wrap' }}>
           {/* Sidebar Filters */}
           <aside style={{ width: '240px', flexShrink: 0 }}>
             {/* Search */}
-            <form onSubmit={handleSearch} style={{ marginBottom: '1.5rem' }}>
-              <label className="input-label">Search</label>
+            <form onSubmit={handleSearch} style={{ marginBottom: '1.75rem' }}>
+              <label className="input-label" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.5rem' }}>Search</label>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <input
                   className="input"
-                  placeholder="Search fabrics..."
-                  value={filters.search}
-                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                  placeholder="Search products..."
+                  value={searchDraft}
+                  onChange={(e) => setSearchDraft(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem 0.75rem',
+                    border: '1px solid var(--clr-border)',
+                    borderRadius: 'var(--r-sm)',
+                    fontSize: '0.875rem',
+                    outline: 'none',
+                    transition: 'border-color 150ms ease',
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = 'var(--clr-brand)'}
+                  onBlur={(e) => e.target.style.borderColor = 'var(--clr-border)'}
                 />
               </div>
             </form>
 
             {/* Categories */}
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label className="input-label">Category</label>
+            <div style={{ marginBottom: '1.75rem' }}>
+              <label className="input-label" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.5rem' }}>Categories</label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
                 <button
-                  onClick={() => { setFilters({ ...filters, categoryId: '', categorySlug: '' }); setPage(1); }}
+                  onClick={() => updateFilters({ categoryId: null, category: null, sub: null })}
                   style={{
                     textAlign: 'left',
                     padding: '0.5rem 0.75rem',
-                    background: (!filters.categoryId && !filters.categorySlug) ? 'var(--color-accent)' : 'transparent',
-                    color: (!filters.categoryId && !filters.categorySlug) ? 'white' : 'var(--color-text)',
+                    background: (!categoryId && !categorySlug) ? 'var(--clr-brand)' : 'transparent',
+                    color: (!categoryId && !categorySlug) ? '#white' : 'var(--clr-text)',
                     border: 'none',
-                    borderRadius: '0.375rem',
-                    fontSize: '0.875rem',
+                    borderRadius: 'var(--r-sm)',
+                    fontSize: '0.85rem',
+                    fontWeight: (!categoryId && !categorySlug) ? 600 : 400,
                     cursor: 'pointer',
-                    transition: 'all 0.15s',
+                    transition: 'all 150ms ease',
                   }}
+                  onMouseEnter={(e) => { if (categoryId || categorySlug) e.currentTarget.style.background = 'var(--clr-brand-tint)'; }}
+                  onMouseLeave={(e) => { if (categoryId || categorySlug) e.currentTarget.style.background = 'transparent'; }}
                 >
                   All Categories
                 </button>
-                {categories.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => { setFilters({ ...filters, categoryId: cat.id, categorySlug: '' }); setPage(1); }}
-                    style={{
-                      textAlign: 'left',
-                      padding: '0.5rem 0.75rem',
-                      background: (filters.categoryId === cat.id || filters.categorySlug === cat.slug) ? 'var(--color-accent)' : 'transparent',
-                      color: (filters.categoryId === cat.id || filters.categorySlug === cat.slug) ? 'white' : 'var(--color-text)',
-                      border: 'none',
-                      borderRadius: '0.375rem',
-                      fontSize: '0.875rem',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s',
-                    }}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
+                {categories.map((cat) => {
+                  const isSelected = categoryId === cat.id || categorySlug === cat.slug;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => updateFilters({ categoryId: cat.id, category: null, sub: null })}
+                      style={{
+                        textAlign: 'left',
+                        padding: '0.5rem 0.75rem',
+                        background: isSelected ? 'var(--clr-brand)' : 'transparent',
+                        color: isSelected ? 'white' : 'var(--clr-text)',
+                        border: 'none',
+                        borderRadius: 'var(--r-sm)',
+                        fontSize: '0.85rem',
+                        fontWeight: isSelected ? 600 : 400,
+                        cursor: 'pointer',
+                        transition: 'all 150ms ease',
+                      }}
+                      onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = 'var(--clr-brand-tint)'; }}
+                      onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      {cat.name}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Price */}
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label className="input-label">Price Range</label>
+            <div style={{ marginBottom: '1.75rem' }}>
+              <label className="input-label" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.5rem' }}>Price Range</label>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <input
                   className="input"
                   type="number"
                   placeholder="Min"
-                  value={filters.minPrice}
-                  onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
-                  style={{ width: '50%' }}
+                  value={minPriceDraft}
+                  onChange={(e) => setMinPriceDraft(e.target.value)}
+                  style={{
+                    width: '50%',
+                    padding: '0.5rem 0.75rem',
+                    border: '1px solid var(--clr-border)',
+                    borderRadius: 'var(--r-sm)',
+                    fontSize: '0.875rem',
+                    outline: 'none',
+                  }}
                 />
-                <span style={{ color: 'var(--color-text-muted)' }}>—</span>
+                <span style={{ color: 'var(--clr-text-3)' }}>—</span>
                 <input
                   className="input"
                   type="number"
                   placeholder="Max"
-                  value={filters.maxPrice}
-                  onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
-                  style={{ width: '50%' }}
+                  value={maxPriceDraft}
+                  onChange={(e) => setMaxPriceDraft(e.target.value)}
+                  style={{
+                    width: '50%',
+                    padding: '0.5rem 0.75rem',
+                    border: '1px solid var(--clr-border)',
+                    borderRadius: 'var(--r-sm)',
+                    fontSize: '0.875rem',
+                    outline: 'none',
+                  }}
                 />
               </div>
               <button
-                onClick={() => { setPage(1); loadProducts(1); }}
+                onClick={() => updateFilters({ minPrice: minPriceDraft, maxPrice: maxPriceDraft })}
                 className="btn btn-outline btn-sm"
-                style={{ width: '100%', marginTop: '0.5rem' }}
+                style={{ width: '100%', marginTop: '0.75rem', fontSize: '0.75rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.05em' }}
               >
                 Apply Price Filter
               </button>
@@ -166,14 +238,22 @@ function ProductsContent() {
 
             {/* Sort */}
             <div>
-              <label className="input-label">Sort By</label>
+              <label className="input-label" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.5rem' }}>Sort By</label>
               <select
                 className="input"
-                value={`${filters.sortBy}-${filters.sortOrder}`}
+                value={`${sortBy}-${sortOrder}`}
                 onChange={(e) => {
-                  const [sortBy, sortOrder] = e.target.value.split('-');
-                  setFilters({ ...filters, sortBy, sortOrder: sortOrder as 'asc' | 'desc' });
-                  setPage(1);
+                  const [newSortBy, newSortOrder] = e.target.value.split('-');
+                  updateFilters({ sortBy: newSortBy, sortOrder: newSortOrder });
+                }}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem 0.75rem',
+                  border: '1px solid var(--clr-border)',
+                  borderRadius: 'var(--r-sm)',
+                  fontSize: '0.875rem',
+                  outline: 'none',
+                  background: '#fff',
                 }}
               >
                 <option value="createdAt-desc">Newest First</option>
@@ -188,28 +268,42 @@ function ProductsContent() {
 
           {/* Product Grid */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            {/* Results count */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+            {/* Results count & current active tag if filtering */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <p style={{ fontSize: '0.875rem', color: 'var(--clr-text-2)', fontFamily: 'var(--font-mono)' }}>
                 {pagination.total} products found
               </p>
+              {subCategory && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.25rem 0.625rem', background: 'var(--clr-brand-tint)', border: '1px solid var(--clr-brand)', borderRadius: 'var(--r-full)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--clr-brand)', textTransform: 'capitalize' }}>
+                  Subcategory: {subCategory.replace('-', ' ')}
+                  <button onClick={() => updateFilters({ sub: null })} style={{ display: 'inline-flex', alignSelf: 'center', cursor: 'pointer', fontWeight: 700, paddingLeft: '0.25rem', border: 'none', background: 'none', color: 'var(--clr-brand)' }}>×</button>
+                </div>
+              )}
             </div>
 
             {loading ? (
-              <div className="product-grid">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="skeleton" style={{ height: '360px' }} />
+              <div className="product-grid animate-fade-in">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <div key={i} className="skeleton-product-card">
+                    <div className="skeleton-image" />
+                    <div className="skeleton-info">
+                      <div className="skeleton-line tag" />
+                      <div className="skeleton-line title-1" />
+                      <div className="skeleton-line title-2" />
+                      <div className="skeleton-line price" />
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : products.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-                <p style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</p>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>No products found</h3>
-                <p style={{ color: 'var(--color-text-muted)' }}>Try adjusting your filters or search terms</p>
+              <div style={{ textAlign: 'center', padding: '5rem 2rem', background: 'var(--clr-surface-2)', borderRadius: 'var(--r-md)', border: '1px dashed var(--clr-border)' }}>
+                <p style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔍</p>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 600, marginBottom: '0.25rem', color: 'var(--clr-text)' }}>No products found</h3>
+                <p style={{ color: 'var(--clr-text-3)', fontSize: '0.85rem' }}>Try adjusting your filters or search terms</p>
               </div>
             ) : (
               <>
-                <div className="product-grid">
+                <div className="product-grid animate-fade-in">
                   {products.map((product, idx) => (
                     <ProductCard key={product.id} product={product} index={idx} />
                   ))}
@@ -217,11 +311,12 @@ function ProductsContent() {
 
                 {/* Pagination */}
                 {pagination.totalPages > 1 && (
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '2.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '3.5rem' }}>
                     <button
                       className="btn btn-outline btn-sm"
                       disabled={page <= 1}
-                      onClick={() => setPage(page - 1)}
+                      onClick={() => updateFilters({ page: page - 1 })}
+                      style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                     >
                       Previous
                     </button>
@@ -229,7 +324,8 @@ function ProductsContent() {
                       <button
                         key={i + 1}
                         className={`btn btn-sm ${page === i + 1 ? 'btn-primary' : 'btn-outline'}`}
-                        onClick={() => setPage(i + 1)}
+                        onClick={() => updateFilters({ page: i + 1 })}
+                        style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}
                       >
                         {i + 1}
                       </button>
@@ -237,7 +333,8 @@ function ProductsContent() {
                     <button
                       className="btn btn-outline btn-sm"
                       disabled={page >= pagination.totalPages}
-                      onClick={() => setPage(page + 1)}
+                      onClick={() => updateFilters({ page: page + 1 })}
+                      style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                     >
                       Next
                     </button>
@@ -254,7 +351,14 @@ function ProductsContent() {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={<div className="container" style={{ padding: '4rem 0', textAlign: 'center' }}><div className="skeleton" style={{ height: '400px' }} /></div>}>
+    <Suspense fallback={
+      <div className="container" style={{ padding: '5rem 0' }}>
+        <div style={{ display: 'flex', gap: '2.5rem' }}>
+          <div style={{ width: '240px' }} className="skeleton-product-card" />
+          <div style={{ flex: 1 }} className="skeleton-product-card" />
+        </div>
+      </div>
+    }>
       <ProductsContent />
     </Suspense>
   );

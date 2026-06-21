@@ -62,6 +62,7 @@ export class ProductsService {
     search?: string;
     categoryId?: string;
     categorySlug?: string;
+    subCategory?: string;
     minPrice?: number;
     maxPrice?: number;
     sortBy?: string;
@@ -89,6 +90,11 @@ export class ProductsService {
       where.categoryId = query.categoryId;
     } else if (query.categorySlug) {
       where.category = { slug: query.categorySlug };
+    }
+
+    // Subcategory filter
+    if (query.subCategory) {
+      where.subCategory = query.subCategory;
     }
 
     // Price range filter

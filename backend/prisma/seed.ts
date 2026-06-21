@@ -97,6 +97,7 @@ async function main() {
       images: ['/images/products/women-gown.png'],
       attributes: { color: 'Midnight Blue', material: 'Silk Blend', fit: 'Regular', occasion: 'Evening' },
       categoryId: categories[0].id,
+      subCategory: 'evening',
     },
     {
       name: 'Floral Summer Maxi Dress',
@@ -109,6 +110,7 @@ async function main() {
       images: ['/images/products/women-summer-dress.png'],
       attributes: { color: 'Floral Print', material: 'Chiffon', fit: 'Relaxed', occasion: 'Casual' },
       categoryId: categories[0].id,
+      subCategory: 'casual',
     },
     {
       name: 'Professional Silk Blouse',
@@ -120,6 +122,7 @@ async function main() {
       images: ['/images/products/women-blouse.png'],
       attributes: { color: 'Ivory White', material: '100% Silk', fit: 'Tailored', occasion: 'Workwear' },
       categoryId: categories[0].id,
+      subCategory: 'blouses',
     },
 
     // Men's Products
@@ -134,6 +137,7 @@ async function main() {
       images: ['/images/products/men-shirt.png'],
       attributes: { color: 'Light Blue', material: 'Oxford Cotton', fit: 'Slim Fit', occasion: 'Formal' },
       categoryId: categories[1].id,
+      subCategory: 'shirts',
     },
     {
       name: 'Premium Slim Fit Chinos',
@@ -145,6 +149,7 @@ async function main() {
       images: ['/images/products/men-chinos.png'],
       attributes: { color: 'Khaki', material: 'Cotton Twill', fit: 'Slim Fit', occasion: 'Smart Casual' },
       categoryId: categories[1].id,
+      subCategory: 'trousers',
     },
     {
       name: 'Textured Polo T-Shirt',
@@ -157,6 +162,7 @@ async function main() {
       images: ['/images/products/men-polo.png'],
       attributes: { color: 'Charcoal Grey', material: 'Pique Cotton', fit: 'Regular', occasion: 'Casual' },
       categoryId: categories[1].id,
+      subCategory: 'casual',
     },
 
     // Teenagers' Products
@@ -171,6 +177,7 @@ async function main() {
       images: ['/images/products/teen-denim.png'],
       attributes: { color: 'Vintage Blue', material: 'Denim', fit: 'Oversized', occasion: 'Casual' },
       categoryId: categories[2].id,
+      subCategory: 'street',
     },
     {
       name: 'Graphic Oversized Streetwear Tee',
@@ -182,6 +189,7 @@ async function main() {
       images: ['/images/products/teen-tee.png'],
       attributes: { color: 'Black/Neon', material: 'Heavy Cotton', fit: 'Oversized', occasion: 'Streetwear' },
       categoryId: categories[2].id,
+      subCategory: 'casual',
     },
 
     // Uniforms
@@ -195,6 +203,7 @@ async function main() {
       images: ['/images/products/uniform-shirt.png'],
       attributes: { color: 'White', material: 'Poly-Cotton', fit: 'Regular', occasion: 'School' },
       categoryId: categories[3].id,
+      subCategory: 'government-school',
     },
     {
       name: 'Corporate Executive Blazer',
@@ -207,13 +216,25 @@ async function main() {
       images: ['/images/products/uniform-blazer.png'],
       attributes: { color: 'Navy Blue', material: 'Suiting Blend', fit: 'Tailored', occasion: 'Corporate' },
       categoryId: categories[3].id,
+      subCategory: 'corporate',
     },
   ];
 
   for (const product of products) {
     await prisma.product.upsert({
       where: { sku: product.sku },
-      update: {},
+      update: {
+        name: product.name,
+        slug: product.slug,
+        description: product.description,
+        price: product.price,
+        compareAtPrice: product.compareAtPrice,
+        stockQuantity: product.stockQuantity,
+        images: product.images,
+        attributes: product.attributes,
+        categoryId: product.categoryId,
+        subCategory: product.subCategory,
+      },
       create: product,
     });
   }

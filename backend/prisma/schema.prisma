@@ -85,6 +85,7 @@ model Product {
   images         Json     @default("[]")
   attributes     Json     @default("{}")
   categoryId     String?  @map("category_id") @db.Uuid
+  subCategory    String?  @map("sub_category")
   isActive       Boolean  @default(true) @map("is_active")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
@@ -94,6 +95,7 @@ model Product {
 
   @@index([slug])
   @@index([categoryId])
+  @@index([subCategory])
   @@index([isActive])
   @@index([price])
   @@map("products")
