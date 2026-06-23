@@ -173,12 +173,8 @@ export default function Footer() {
       <div style={{ padding: '4rem 0 3rem' }}>
         <div className="container">
           <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1.6fr repeat(3, 1fr)',
-              gap: '3rem',
-              marginBottom: '3.5rem',
-            }}
+            className="footer-grid"
+            style={{ marginBottom: '3.5rem' }}
           >
             {/* Brand column */}
             <div>

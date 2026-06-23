@@ -125,6 +125,49 @@ const WHY_US = [
   { id: 'districts',  num: '25',    label: 'Districts Delivered',   body: 'Our logistics network covers every district island-wide with fast, trackable delivery.' },
 ];
 
+/* ── Brand Logo SVGs ──────────────────────────────────────────── */
+const LogoAivo = () => (
+  <svg width="140" height="50" viewBox="0 0 140 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M22 10L24.5 22L36 24.5L24.5 27L22 38.5L19.5 27L8 24.5L19.5 22L22 10Z" fill="#0083c4" stroke="#0083c4" strokeWidth="1.5" strokeLinejoin="round"/>
+    <path d="M16 16L18 23L25 25L18 27L16 34L14 27L7 25L14 23L16 16Z" fill="#fff"/>
+    <text x="44" y="28" fontFamily="var(--font-sans)" fontSize="20" fontWeight="700" fill="#0083c4" letterSpacing="-0.02em">Aivo</text>
+    <text x="44" y="38" fontFamily="var(--font-mono)" fontSize="6" fontWeight="600" fill="#a8a8a8" letterSpacing="0.18em">SPECIAL GUEST</text>
+  </svg>
+);
+const LogoUSPolo = () => (
+  <svg width="140" height="50" viewBox="0 0 140 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M22 8C22 8 20.5 10 19 11.5C18 12.5 17 14 17.5 15.5C18 17 19.5 18 20.5 19C21 19.5 21.5 20.5 21.5 21.5C21.5 23 20 24.5 19 25.5C18.5 26 18 27 18.5 28C19 29 20.5 29.5 21.5 29.5C23 29.5 24 28 24.5 27C25 26 26.5 25 26 23C25.5 21 24.5 19 24.5 18.5C24.5 18 25 17.5 25.5 17.5C26 17.5 27 18 27.5 18.5C28.5 19.5 29 21.5 30 22C30.5 22.5 31.5 21.5 31 20.5C30.5 19.5 29 17 28 15.5C27 14 25.5 12 25.5 11.5C25.5 11 26 10.5 26.5 10.5C27 10.5 28.5 12 29 12.5C29.5 13 30.5 12.5 30 11.5C29.5 10.5 27.5 8 26.5 7C25.5 6 24 5 23 5C22 5 22 8 22 8Z" fill="#1d2e5a"/>
+    <text x="36" y="24" fontFamily="var(--font-serif)" fontSize="12" fontWeight="700" fill="#1d2e5a" letterSpacing="0.05em">U.S. POLO ASSN.</text>
+    <text x="36" y="32" fontFamily="var(--font-mono)" fontSize="5.5" fontWeight="500" fill="#a8a8a8" letterSpacing="0.1em">SINCE 1890</text>
+  </svg>
+);
+const LogoGiggles = () => (
+  <svg width="140" height="50" viewBox="0 0 140 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <text x="14" y="30" fontFamily="var(--font-sans)" fontSize="26" fontWeight="800" fill="#b0268d" letterSpacing="-0.04em">Giggles</text>
+    <text x="16" y="40" fontFamily="var(--font-mono)" fontSize="5.5" fontWeight="600" fill="#a8a8a8" letterSpacing="0.1em">INFANT COLLECTION</text>
+  </svg>
+);
+const LogoFlipFlop = () => (
+  <svg width="140" height="50" viewBox="0 0 140 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <text x="16" y="30" fontFamily="var(--font-sans)" fontSize="22" fontWeight="700" fill="#0b7a8d" letterSpacing="0.02em">Flip Flop</text>
+    <text x="18" y="38" fontFamily="var(--font-mono)" fontSize="5.5" fontWeight="500" fill="#a8a8a8" letterSpacing="0.08em">CASUAL FOOTWEAR</text>
+  </svg>
+);
+const LogoEthnicFusion = () => (
+  <svg width="150" height="50" viewBox="0 0 150 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="5" y="5" width="140" height="40" fill="#091428" rx="2"/>
+    <text x="16" y="29" fontFamily="var(--font-serif)" fontSize="15" fontStyle="italic" fill="#e8c84a" letterSpacing="0.04em">Ethnic Fusion</text>
+  </svg>
+);
+
+const BRANDS = [
+  { name: 'Aivo',          render: LogoAivo },
+  { name: 'U.S. Polo Assn.', render: LogoUSPolo },
+  { name: 'Giggles',       render: LogoGiggles },
+  { name: 'Flip Flop',     render: LogoFlipFlop },
+  { name: 'Ethnic Fusion', render: LogoEthnicFusion },
+];
+
 /* ═══════════════════════════════════════════════════════════════
    PAGE COMPONENT
 ═══════════════════════════════════════════════════════════════ */
@@ -837,8 +880,67 @@ export default function HomePage() {
       </section>
 
       {/* ══════════════════════════════════════════════════
-          WHY NANDANA TEXTILE
+          OUR BRANDS SHOWCASE
       ══════════════════════════════════════════════════ */}
+      <section
+        id="our-brands"
+        style={{
+          padding: '4.5rem 0',
+          background: 'var(--warm-50)',
+          borderTop: '1px solid var(--clr-border-2)',
+          borderBottom: '3px solid var(--clr-brand)',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div className="container">
+          <div className="section-header-center" style={{ marginBottom: '2.5rem' }}>
+            <span className="label-eyebrow">Partners</span>
+            <h2
+              style={{
+                fontFamily: 'var(--font-sans)',
+                fontSize: '1.15rem',
+                fontWeight: 700,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: 'var(--clr-text)',
+                margin: 0,
+              }}
+            >
+              Our Brands
+            </h2>
+            <span className="section-rule" />
+            <p style={{ marginTop: '0.75rem', color: 'var(--clr-text-2)', fontSize: '0.875rem' }}>
+              Trusted partners crafting premium quality fabrics and fashion for Sri Lanka
+            </p>
+          </div>
+
+          {/* Continuous scrolling brand marquee */}
+          <div
+            className="brands-marquee-container"
+            style={{
+              overflow: 'hidden',
+              position: 'relative',
+            }}
+            onMouseEnter={e => (e.currentTarget.querySelector('.brands-marquee-track') as HTMLElement | null)?.style.setProperty('animation-play-state', 'paused')}
+            onMouseLeave={e => (e.currentTarget.querySelector('.brands-marquee-track') as HTMLElement | null)?.style.setProperty('animation-play-state', 'running')}
+          >
+            <div className="brands-marquee-track">
+              {[...BRANDS, ...BRANDS, ...BRANDS, ...BRANDS].map((brand, idx) => {
+                const BrandLogo = brand.render;
+                return (
+                  <div key={idx} className="brand-slide">
+                    <div className="brand-slide-inner">
+                      <BrandLogo />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="why-us" style={{ padding: 'var(--space-section) 0', background: 'var(--warm-50)' }}>
         <div className="container">
           <div className="section-header-center">

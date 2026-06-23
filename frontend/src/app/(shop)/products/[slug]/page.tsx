@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { Product } from '@/types';
 import { useCartStore } from '@/store/useCartStore';
+import { useWishlistStore } from '@/store/useWishlistStore';
 
 // ── Size chart data for tailored items ──────────────────────────
 const SIZE_CHART = [
@@ -22,6 +23,8 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
+  const { toggleItem, isWishlisted } = useWishlistStore();
+  const isSaved = product ? isWishlisted(product.id) : false;
 
   // Tabs state
   const [activeTab, setActiveTab] = useState<'description' | 'fit' | 'shipping'>('description');
@@ -85,14 +88,14 @@ export default function ProductDetailPage() {
         <span style={{ color: 'var(--color-text)' }}>{product.name}</span>
       </nav>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', alignItems: 'start', marginBottom: '4rem' }}>
+      <div className="product-detail-grid">
         {/* Image */}
         <div
           style={{
             borderRadius: '1rem',
             overflow: 'hidden',
             background: 'var(--clr-surface-2)',
-            height: '500px',
+            aspectRatio: '3 / 4',
             position: 'relative',
           }}
         >
@@ -144,11 +147,11 @@ export default function ProductDetailPage() {
           {/* Price */}
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginBottom: '1.5rem' }}>
             <span style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--color-text)' }}>
-              ${Number(product.price).toFixed(2)}
+              Rs. {Number(product.price).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
             </span>
             {product.compareAtPrice && (
               <span style={{ fontSize: '1.125rem', color: 'var(--color-text-light)', textDecoration: 'line-through' }}>
-                ${Number(product.compareAtPrice).toFixed(2)}
+                Rs. {Number(product.compareAtPrice).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
               </span>
             )}
             {discount > 0 && (
@@ -230,7 +233,7 @@ export default function ProductDetailPage() {
 
           {/* Add to Cart */}
           {product.stockQuantity > 0 && (
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '2rem' }}>
+            <div className="product-actions-row">
               <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid var(--color-border)', borderRadius: '0.5rem', overflow: 'hidden' }}>
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -250,10 +253,42 @@ export default function ProductDetailPage() {
               </div>
               <button
                 onClick={handleAddToCart}
-                className={`btn btn-lg ${added ? 'btn-secondary' : 'btn-primary'}`}
-                style={{ flex: 1 }}
+                className={`btn btn-lg btn-add-cart ${added ? 'btn-secondary' : 'btn-primary'}`}
               >
                 {added ? '✓ Added to Cart!' : 'Add to Cart'}
+              </button>
+              <button
+                onClick={() => toggleItem(product)}
+                aria-label={isSaved ? "Remove from wishlist" : "Add to wishlist"}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '3.25rem',
+                  height: '3.25rem',
+                  borderRadius: '0.5rem',
+                  border: isSaved ? '1.5px solid var(--clr-brand)' : '1.5px solid var(--color-border)',
+                  background: isSaved ? 'var(--clr-brand-tint, rgba(var(--clr-brand-rgb), 0.08))' : 'none',
+                  color: isSaved ? 'var(--clr-brand)' : 'var(--color-text-muted)',
+                  cursor: 'pointer',
+                  transition: 'all 200ms ease',
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--clr-brand)';
+                  if (!isSaved) {
+                    (e.currentTarget as HTMLElement).style.color = 'var(--clr-brand)';
+                  }
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = isSaved ? 'var(--clr-brand)' : 'var(--color-border)';
+                  if (!isSaved) {
+                    (e.currentTarget as HTMLElement).style.color = 'var(--color-text-muted)';
+                  }
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                </svg>
               </button>
             </div>
           )}

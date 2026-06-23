@@ -792,10 +792,41 @@ export default function Header() {
       )}
 
       {/* ── Mobile Overlay ────────────────────────────────── */}
-      <div className={`mobile-overlay ${mobileOpen ? 'open' : ''}`} onClick={closeMobile} />
+      <div
+        onClick={closeMobile}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.55)',
+          backdropFilter: 'blur(2px)',
+          zIndex: 490,
+          opacity: mobileOpen ? 1 : 0,
+          visibility: mobileOpen ? 'visible' : 'hidden',
+          transition: 'opacity 0.4s ease, visibility 0.4s',
+          pointerEvents: mobileOpen ? 'all' : 'none',
+        }}
+      />
 
       {/* ── Mobile Drawer ─────────────────────────────────── */}
-      <div id="mobile-drawer" className={`mobile-drawer ${mobileOpen ? 'open' : ''}`}>
+      <div
+        id="mobile-drawer"
+        style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 'auto',
+          width: 'min(85vw, 360px)',
+          background: 'var(--clr-surface)',
+          zIndex: 491,
+          transform: mobileOpen ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: 'var(--shadow-xl)',
+          overflowY: 'auto',
+        }}
+      >
         {/* Drawer Header */}
         <div
           style={{

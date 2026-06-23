@@ -113,9 +113,9 @@ function ProductsContent() {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '2.5rem', flexWrap: 'wrap' }}>
+        <div className="products-layout">
           {/* Sidebar Filters */}
-          <aside style={{ width: '240px', flexShrink: 0 }}>
+          <aside className="products-sidebar">
             {/* Search */}
             <form onSubmit={handleSearch} style={{ marginBottom: '1.75rem' }}>
               <label className="input-label" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.5rem' }}>Search</label>
