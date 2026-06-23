@@ -29,7 +29,7 @@ export default function CartPage() {
         Shopping Cart ({totalItems()} items)
       </h1>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '2.5rem', alignItems: 'start' }}>
+      <div className="cart-layout">
         {/* Cart Items */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {items.map((item) => (
@@ -47,16 +47,29 @@ export default function CartPage() {
               <div
                 style={{
                   width: '100px',
-                  height: '100px',
-                  borderRadius: '0.625rem',
-                  background: 'linear-gradient(135deg, hsl(220, 25%, 90%), hsl(250, 30%, 85%))',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  height: '120px',
+                  borderRadius: '0.5rem',
+                  background: 'var(--warm-100)',
+                  overflow: 'hidden',
                   flexShrink: 0,
+                  position: 'relative',
                 }}
               >
-                <span style={{ fontSize: '2rem' }}>🧵</span>
+                {item.product.images && item.product.images.length > 0 ? (
+                  <img
+                    src={item.product.images[0]}
+                    alt={item.product.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div style={{
+                    width: '100%', height: '100%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'linear-gradient(135deg, var(--warm-100), var(--warm-200))',
+                  }}>
+                    <span style={{ fontSize: '2rem' }}>🧵</span>
+                  </div>
+                )}
               </div>
 
               {/* Details */}
@@ -78,7 +91,7 @@ export default function CartPage() {
                   </p>
                 )}
                 <p style={{ fontSize: '1rem', fontWeight: 600, marginTop: '0.5rem' }}>
-                  ${Number(item.product.price).toFixed(2)}
+                  Rs. {Number(item.product.price).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
                 </p>
               </div>
 
@@ -103,7 +116,7 @@ export default function CartPage() {
 
               {/* Total */}
               <p style={{ fontSize: '1.0625rem', fontWeight: 700, minWidth: '80px', textAlign: 'right' }}>
-                ${(Number(item.product.price) * item.quantity).toFixed(2)}
+                Rs. {(Number(item.product.price) * item.quantity).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
               </p>
 
               {/* Remove */}
@@ -154,7 +167,7 @@ export default function CartPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9375rem' }}>
               <span style={{ color: 'var(--color-text-muted)' }}>Subtotal ({totalItems()} items)</span>
-              <span style={{ fontWeight: 500 }}>${subtotal().toFixed(2)}</span>
+              <span style={{ fontWeight: 500 }}>Rs. {subtotal().toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9375rem' }}>
               <span style={{ color: 'var(--color-text-muted)' }}>Shipping</span>
@@ -162,7 +175,7 @@ export default function CartPage() {
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9375rem' }}>
               <span style={{ color: 'var(--color-text-muted)' }}>Tax</span>
-              <span style={{ fontWeight: 500 }}>$0.00</span>
+              <span style={{ fontWeight: 500 }}>Rs. 0.00</span>
             </div>
           </div>
 
@@ -178,7 +191,7 @@ export default function CartPage() {
             }}
           >
             <span>Total</span>
-            <span>${subtotal().toFixed(2)}</span>
+            <span>Rs. {subtotal().toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span>
           </div>
 
           <Link href="/checkout" className="btn btn-primary btn-lg" style={{ width: '100%', marginBottom: '0.75rem' }}>

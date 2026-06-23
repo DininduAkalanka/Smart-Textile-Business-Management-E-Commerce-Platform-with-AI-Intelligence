@@ -1,13 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { Product } from '@/types';
 import ProductCard from '@/components/products/ProductCard';
 
-/* ── SVG Icons ──────────────────────────────────────────────── */
+/* ── Icons ──────────────────────────────────────────────────── */
 const IconArrow = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
@@ -23,54 +22,47 @@ const IconChevronRight = () => (
     <path d="m9 18 6-6-6-6"/>
   </svg>
 );
-const IconStore = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
-    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-    <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
-    <path d="M2 7h20"/>
-  </svg>
-);
 
-/* ── Content Data ───────────────────────────────────────────── */
+/* ── Data ────────────────────────────────────────────────────── */
 const HERO_SLIDES = [
   {
     id: 1,
-    eyebrow: 'Women Collection 2026',
-    headline: 'Editorial Sarees & Dress Materials',
-    subheadline: 'Crafted with premium silk blends and traditional weaves. Elevate your wardrobe for the new season.',
-    primaryCta: { label: "Shop Women's Wear", href: '/products?category=women' },
-    secondaryCta: { label: 'View Latest Sarees', href: '/products?category=women&sub=sarees' },
-    accentColor: 'var(--clr-brand)',
-    image: '/images/categories/women.jpg',
+    eyebrow: 'New Season 2024',
+    headline: 'Curated Textiles for Every Occasion',
+    subheadline: 'School, office, and fashion — precision-crafted fabrics with over 15 years of expertise in Sri Lanka.',
+    primaryCta:   { label: 'Shop New Arrivals',  href: '/products?sort=newest' },
+    secondaryCta: { label: 'Explore Categories', href: '/products' },
+    accentColor: 'var(--crimson-600)',
+    image: '/images/hero1.png',
   },
   {
     id: 2,
-    eyebrow: 'Modern Menswear',
-    headline: 'Slim Fit Chinos & Classic Oxfords',
-    subheadline: 'Crisp fabrics and comfortable fits engineered for the modern gentleman, from workwear to dinners.',
-    primaryCta: { label: "Explore Men's Wear", href: '/products?category=men' },
-    secondaryCta: { label: 'Formal Shirts', href: '/products?category=men&sub=shirts' },
-    accentColor: 'var(--clr-gold)',
-    image: '/images/categories/men.jpg',
+    eyebrow: 'Uniform Specialists',
+    headline: 'School & Office Uniforms, Precisely Tailored',
+    subheadline: 'Government and private school uniforms, corporate formal wear — uniform-grade fabrics trusted by institutions across Sri Lanka.',
+    primaryCta:   { label: 'View Uniform Collection', href: '/products?category=uniforms' },
+    secondaryCta: { label: 'Request Bulk Order',       href: '/products?category=uniforms&bulk=1' },
+    accentColor: 'var(--gold-500)',
+    image: '/images/hero2.png',
   },
   {
     id: 3,
-    eyebrow: 'Uniform Specialists',
-    headline: 'School & Corporate Attire',
-    subheadline: 'Durable, government-approved fabrics designed to stand up to heavy daily wear and washing.',
-    primaryCta: { label: 'Browse Uniforms', href: '/products?category=uniforms' },
-    secondaryCta: { label: 'Office blazer', href: '/products?category=uniforms&sub=corporate' },
-    accentColor: 'var(--clr-brand)',
-    image: '/images/categories/uniforms.jpg',
+    eyebrow: "Women's Collection",
+    headline: 'Sarees, Dress Materials & Kurthas',
+    subheadline: 'From traditional sarees to contemporary dress materials — discover the finest women\'s fabrics, curated for every celebration.',
+    primaryCta:   { label: "Shop Women's Collection", href: '/products?category=women' },
+    secondaryCta: { label: 'View Sarees',              href: '/products?category=women&sub=sarees' },
+    accentColor: 'var(--crimson-600)',
+    image: '/images/hero3.png',
   },
 ];
 
-const DEPARTMENTS = [
-  { id: 'women', label: 'Women', subLabel: 'Sarees & Dresses', href: '/products?category=women', img: '/images/categories/women.jpg' },
-  { id: 'men', label: 'Men', subLabel: 'Formal & Casual', href: '/products?category=men', img: '/images/categories/men.jpg' },
-  { id: 'teenagers', label: 'Teenagers', subLabel: 'Trendy Streetwear', href: '/products?category=teenagers', img: '/images/categories/teenagers.jpg' },
-  { id: 'uniforms', label: 'Uniforms', subLabel: 'School & Corporate', href: '/products?category=uniforms', img: '/images/categories/uniforms.jpg' },
+const CATEGORIES = [
+  { id: 'new-arrivals', label: 'New Arrivals',  subLabel: 'This Season',     href: '/products?sort=newest',          bg: 'linear-gradient(160deg, #0d0d0d 0%, #1f0000 100%)' },
+  { id: 'women',        label: 'Women',          subLabel: 'Sarees & More',   href: '/products?category=women',       bg: 'linear-gradient(160deg, #0d0005 0%, #1f0015 100%)' },
+  { id: 'men',          label: 'Men',            subLabel: 'Formal & Casual', href: '/products?category=men',         bg: 'linear-gradient(160deg, #000a0d 0%, #00151f 100%)' },
+  { id: 'teenagers',    label: 'Teenagers',      subLabel: 'Trending',        href: '/products?category=teenagers',   bg: 'linear-gradient(160deg, #050d00 0%, #0f1f00 100%)' },
+  { id: 'uniforms',     label: 'Uniforms',       subLabel: 'School & Office', href: '/products?category=uniforms',   bg: 'linear-gradient(160deg, #0d0500 0%, #1f0f00 100%)' },
 ];
 
 const UNIFORM_SEGMENTS = [
@@ -108,13 +100,32 @@ const UNIFORM_SEGMENTS = [
   },
 ];
 
-const TRUST_ITEMS = [
-  { id: 'delivery', iconPath: 'M5 12h14M12 5l7 7-7 7M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z', title: 'Island-Wide Delivery', body: 'Reliable delivery across all 25 districts. Free on orders above Rs. 5,000.' },
-  { id: 'koko', iconPath: 'M9 12l2 2 4-4M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z', title: '3 Split Payments (Koko)', body: 'Buy now, pay later. Divide your order into 3 interest-free installments.' },
-  { id: 'returns', iconPath: 'M3 2v6h6M3 8C4.657 4.953 8.045 3 12 3c4.418 0 8 3.582 8 8s-3.582 8-8 8c-3.566 0-6.618-2.167-7.747-5.25', title: 'Easy 7-Day Returns', body: 'Wrong size or fit? Exchange locally or ship back within 7 days.' },
+const MARQUEE_ITEMS = [
+  'Free Delivery on Orders above Rs. 5,000',
+  'Government School Uniforms Available',
+  'Private School Uniform Specialists',
+  'Corporate & Office Uniform Orders',
+  'Women\'s Saree Collection — New Season',
+  'Island-Wide Delivery across Sri Lanka',
+  'Bulk Orders Welcome',
+  '15+ Years of Textile Excellence',
 ];
 
-/* ── Brand Logos SVGs ───────────────────────────────────────── */
+const TRUST_ITEMS = [
+  { id: 'delivery', iconPath: 'M5 12h14M12 5l7 7-7 7M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z', title: 'Island-Wide Delivery',  body: 'Reliable delivery across all 25 districts. Free on orders over Rs. 5,000.' },
+  { id: 'quality',  iconPath: 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 0 0 1.946-.806 3.42 3.42 0 0 1 4.438 0 3.42 3.42 0 0 0 1.946.806 3.42 3.42 0 0 1 3.138 3.138 3.42 3.42 0 0 0 .806 1.946 3.42 3.42 0 0 1 0 4.438 3.42 3.42 0 0 0-.806 1.946 3.42 3.42 0 0 1-3.138 3.138 3.42 3.42 0 0 0-1.946.806 3.42 3.42 0 0 1-4.438 0 3.42 3.42 0 0 0-1.946-.806 3.42 3.42 0 0 1-3.138-3.138 3.42 3.42 0 0 0-.806-1.946 3.42 3.42 0 0 1 0-4.438 3.42 3.42 0 0 0 .806-1.946 3.42 3.42 0 0 1 3.138-3.138z', title: 'Certified Quality',     body: 'Every fabric is quality-checked before dispatch. Authentic and durable.' },
+  { id: 'returns',  iconPath: 'M3 2v6h6M3 8C4.657 4.953 8.045 3 12 3c4.418 0 8 3.582 8 8s-3.582 8-8 8c-3.566 0-6.618-2.167-7.747-5.25',                                                       title: 'Hassle-Free Returns',  body: '7-day returns on eligible items. Straightforward process, no questions asked.' },
+  { id: 'secure',   iconPath: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',                                                                                                                     title: 'Secure Checkout',      body: 'SSL-encrypted transactions. Your payment data is always protected.' },
+];
+
+const WHY_US = [
+  { id: 'experience', num: '15+',   label: 'Years in Business',    body: 'Established in 2009, we have built deep supplier relationships and an unmatched local reputation.' },
+  { id: 'products',   num: '500+',  label: 'Fabric Variants',      body: 'From uniform-grade drill fabric to luxury silks — the broadest selection of any retailer in Sri Lanka.' },
+  { id: 'customers',  num: '10K+',  label: 'Satisfied Customers',  body: 'Families, schools, and corporates across all provinces return to us season after season.' },
+  { id: 'districts',  num: '25',    label: 'Districts Delivered',   body: 'Our logistics network covers every district island-wide with fast, trackable delivery.' },
+];
+
+/* ── Brand Logo SVGs ──────────────────────────────────────────── */
 const LogoAivo = () => (
   <svg width="140" height="50" viewBox="0 0 140 50" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M22 10L24.5 22L36 24.5L24.5 27L22 38.5L19.5 27L8 24.5L19.5 22L22 10Z" fill="#0083c4" stroke="#0083c4" strokeWidth="1.5" strokeLinejoin="round"/>
@@ -123,7 +134,6 @@ const LogoAivo = () => (
     <text x="44" y="38" fontFamily="var(--font-mono)" fontSize="6" fontWeight="600" fill="#a8a8a8" letterSpacing="0.18em">SPECIAL GUEST</text>
   </svg>
 );
-
 const LogoUSPolo = () => (
   <svg width="140" height="50" viewBox="0 0 140 50" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M22 8C22 8 20.5 10 19 11.5C18 12.5 17 14 17.5 15.5C18 17 19.5 18 20.5 19C21 19.5 21.5 20.5 21.5 21.5C21.5 23 20 24.5 19 25.5C18.5 26 18 27 18.5 28C19 29 20.5 29.5 21.5 29.5C23 29.5 24 28 24.5 27C25 26 26.5 25 26 23C25.5 21 24.5 19 24.5 18.5C24.5 18 25 17.5 25.5 17.5C26 17.5 27 18 27.5 18.5C28.5 19.5 29 21.5 30 22C30.5 22.5 31.5 21.5 31 20.5C30.5 19.5 29 17 28 15.5C27 14 25.5 12 25.5 11.5C25.5 11 26 10.5 26.5 10.5C27 10.5 28.5 12 29 12.5C29.5 13 30.5 12.5 30 11.5C29.5 10.5 27.5 8 26.5 7C25.5 6 24 5 23 5C22 5 22 8 22 8Z" fill="#1d2e5a"/>
@@ -131,21 +141,18 @@ const LogoUSPolo = () => (
     <text x="36" y="32" fontFamily="var(--font-mono)" fontSize="5.5" fontWeight="500" fill="#a8a8a8" letterSpacing="0.1em">SINCE 1890</text>
   </svg>
 );
-
 const LogoGiggles = () => (
   <svg width="140" height="50" viewBox="0 0 140 50" fill="none" xmlns="http://www.w3.org/2000/svg">
     <text x="14" y="30" fontFamily="var(--font-sans)" fontSize="26" fontWeight="800" fill="#b0268d" letterSpacing="-0.04em">Giggles</text>
     <text x="16" y="40" fontFamily="var(--font-mono)" fontSize="5.5" fontWeight="600" fill="#a8a8a8" letterSpacing="0.1em">INFANT COLLECTION</text>
   </svg>
 );
-
 const LogoFlipFlop = () => (
   <svg width="140" height="50" viewBox="0 0 140 50" fill="none" xmlns="http://www.w3.org/2000/svg">
     <text x="16" y="30" fontFamily="var(--font-sans)" fontSize="22" fontWeight="700" fill="#0b7a8d" letterSpacing="0.02em">Flip Flop</text>
     <text x="18" y="38" fontFamily="var(--font-mono)" fontSize="5.5" fontWeight="500" fill="#a8a8a8" letterSpacing="0.08em">CASUAL FOOTWEAR</text>
   </svg>
 );
-
 const LogoEthnicFusion = () => (
   <svg width="150" height="50" viewBox="0 0 150 50" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect x="5" y="5" width="140" height="40" fill="#091428" rx="2"/>
@@ -154,37 +161,26 @@ const LogoEthnicFusion = () => (
 );
 
 const BRANDS = [
-  { name: 'Aivo', render: LogoAivo },
+  { name: 'Aivo',          render: LogoAivo },
   { name: 'U.S. Polo Assn.', render: LogoUSPolo },
-  { name: 'Giggles', render: LogoGiggles },
-  { name: 'Flip Flop', render: LogoFlipFlop },
+  { name: 'Giggles',       render: LogoGiggles },
+  { name: 'Flip Flop',     render: LogoFlipFlop },
   { name: 'Ethnic Fusion', render: LogoEthnicFusion },
 ];
 
-const MARQUEE_ITEMS = [
-  'Island-Wide Delivery across Sri Lanka',
-  '3 Interest-Free Installments with Koko & Mintpay',
-  'Nandana Textile — Premium Quality Since 2009',
-  'Uniform Orders Open for Schools & Offices',
-  'Saree & Dress Materials Collection Now Live',
-  'Free Delivery on Orders Over Rs. 5,000',
-];
-
+/* ═══════════════════════════════════════════════════════════════
+   PAGE COMPONENT
+═══════════════════════════════════════════════════════════════ */
 export default function HomePage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [productsLoading, setProductsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'new' | 'trending' | 'premium'>('new');
-  const [slide, setSlide] = useState(0);
+  const [products, setProducts]       = useState<Product[]>([]);
+  const [loading,  setLoading]        = useState(true);
+  const [slide,    setSlide]          = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  /* Brand Marquee Logic (seamless scroll) */
-  const marqueeBrands = [...BRANDS, ...BRANDS, ...BRANDS, ...BRANDS];
-
-  /* Slider Logic */
+  /* Slider */
   const startTimer = useCallback(() => {
     timerRef.current = setInterval(() => setSlide(s => (s + 1) % HERO_SLIDES.length), 5500);
   }, []);
-
   const goToSlide = useCallback((i: number) => {
     setSlide(i);
     if (timerRef.current) clearInterval(timerRef.current);
@@ -196,25 +192,13 @@ export default function HomePage() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [startTimer]);
 
-  /* Tabbed Product Fetching */
+  /* Products */
   useEffect(() => {
-    setProductsLoading(true);
-    const params: any = { limit: 8 };
-    if (activeTab === 'new') {
-      params.sortBy = 'createdAt';
-      params.sortOrder = 'desc';
-    } else if (activeTab === 'trending') {
-      params.sortBy = 'price';
-      params.sortOrder = 'desc';
-    } else if (activeTab === 'premium') {
-      params.subCategory = 'corporate';
-    }
-
-    api.getProducts(params)
+    api.getProducts({ limit: 8, sortBy: 'createdAt', sortOrder: 'desc' })
       .then(r => setProducts(r.products || []))
       .catch(console.error)
-      .finally(() => setProductsLoading(false));
-  }, [activeTab]);
+      .finally(() => setLoading(false));
+  }, []);
 
   const current = HERO_SLIDES[slide];
 
@@ -222,99 +206,122 @@ export default function HomePage() {
     <div style={{ background: 'var(--clr-surface)' }}>
 
       {/* ══════════════════════════════════════════════════
-          HERO SLIDER (With Ken Burns Zoom)
+          HERO SLIDER
       ══════════════════════════════════════════════════ */}
       <section
         id="hero"
-        aria-label="Welcome Slider"
+        aria-label="Hero banner"
         style={{
           position: 'relative',
           overflow: 'hidden',
-          minHeight: 'min(90vh, 680px)',
+          minHeight: 'min(92vh, 720px)',
           display: 'flex',
           alignItems: 'center',
           background: 'var(--obsidian-950)',
         }}
       >
-        {/* Animated Slide Images with Opacity Cross-Fade */}
-        {HERO_SLIDES.map((slideItem, idx) => (
-          <div
-            key={slideItem.id}
-            className={idx === slide ? "ken-burns" : ""}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              zIndex: 0,
-              opacity: idx === slide ? 1 : 0,
-              transition: 'opacity 1200ms ease-in-out',
-              pointerEvents: idx === slide ? 'auto' : 'none',
-            }}
-          >
-            <Image
-              src={slideItem.image}
-              alt={slideItem.headline}
-              fill
-              style={{ objectFit: 'cover' }}
-              priority={idx === 0}
-            />
-          </div>
-        ))}
-
-        {/* Readability Overlay */}
         <div
           style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.55) 60%, transparent 100%)',
+            position: 'absolute', inset: 0,
+            backgroundImage: `url(${current.image})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            transition: 'background-image 0.8s ease',
+            zIndex: 0,
+          }}
+        />
+        {/* Dark overlay for readability */}
+        <div
+          style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)',
             zIndex: 1,
             pointerEvents: 'none',
           }}
         />
+        {/* Ambient gradient */}
+        <div
+          style={{
+            position: 'absolute', inset: 0,
+            background: `radial-gradient(ellipse 70% 70% at 65% 40%, ${current.accentColor === 'var(--gold-500)' ? 'rgba(212,175,55,0.1)' : 'rgba(204,0,0,0.15)'} 0%, transparent 70%)`,
+            transition: 'background 0.8s ease',
+            pointerEvents: 'none',
+            zIndex: 1,
+          }}
+        />
+        {/* Fine grid texture */}
+        <div
+          style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: 'linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)',
+            backgroundSize: '64px 64px',
+            pointerEvents: 'none',
+            zIndex: 1,
+          }}
+        />
 
-        <div className="container hero-content-container" style={{ position: 'relative', zIndex: 2 }}>
-          <div style={{ maxWidth: '640px' }}>
-            {/* Slide Title */}
+        <div className="container" style={{ position: 'relative', zIndex: 2, padding: '6rem 2rem 5rem' }}>
+          <div style={{ maxWidth: '680px' }}>
+
+            {/* Eyebrow */}
             <div
-              key={`title-${current.id}`}
+              key={`eyebrow-${current.id}`}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.75rem',
-                marginBottom: '1.5rem',
+                marginBottom: '2rem',
                 animation: 'fadeInUp 0.5s var(--ease-out-expo) both',
               }}
             >
-              <span style={{ display: 'block', width: '24px', height: '1.5px', background: current.accentColor }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: current.accentColor }}>
+              <span
+                style={{
+                  display: 'block',
+                  width: '28px',
+                  height: '1.5px',
+                  background: current.accentColor,
+                }}
+              />
+              <span
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.65rem',
+                  fontWeight: 400,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: current.accentColor,
+                }}
+              >
                 {current.eyebrow}
               </span>
             </div>
 
             {/* Headline */}
             <h1
-              key={`headline-${current.id}`}
+              key={`h1-${current.id}`}
               style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: 'clamp(1.6rem, 5vw, 3.85rem)',
+                fontSize: 'clamp(2.4rem, 5.5vw, 4.25rem)',
                 fontWeight: 600,
-                lineHeight: 1.1,
+                lineHeight: 1.08,
+                letterSpacing: '-0.015em',
                 color: '#fff',
-                marginBottom: '1.25rem',
+                marginBottom: '1.5rem',
                 animation: 'fadeInUp 0.55s 0.08s var(--ease-out-expo) both',
               }}
             >
               {current.headline}
             </h1>
 
-            {/* Subheadline */}
+            {/* Body */}
             <p
-              key={`desc-${current.id}`}
+              key={`body-${current.id}`}
               style={{
-                fontSize: '0.95rem',
-                lineHeight: 1.75,
-                color: 'rgba(255,255,255,0.6)',
+                fontSize: '1rem',
+                lineHeight: 1.8,
+                color: 'rgba(255,255,255,0.55)',
                 marginBottom: '2.5rem',
-                maxWidth: '480px',
+                maxWidth: '520px',
                 animation: 'fadeInUp 0.55s 0.16s var(--ease-out-expo) both',
               }}
             >
@@ -323,7 +330,7 @@ export default function HomePage() {
 
             {/* CTAs */}
             <div
-              key={`actions-${current.id}`}
+              key={`ctas-${current.id}`}
               style={{
                 display: 'flex',
                 gap: '0.875rem',
@@ -331,7 +338,7 @@ export default function HomePage() {
                 animation: 'fadeInUp 0.55s 0.24s var(--ease-out-expo) both',
               }}
             >
-              <Link href={current.primaryCta.href} className="btn btn-brand btn-lg">
+              <Link href={current.primaryCta.href} id={`hero-primary-${current.id}`} className="btn btn-brand btn-lg">
                 {current.primaryCta.label}
                 <IconArrow />
               </Link>
@@ -339,66 +346,98 @@ export default function HomePage() {
                 {current.secondaryCta.label}
               </Link>
             </div>
+
+            {/* Stats row */}
+            <div
+              style={{
+                display: 'flex',
+                gap: '2.5rem',
+                marginTop: '4rem',
+                paddingTop: '2rem',
+                borderTop: '1px solid rgba(255,255,255,0.08)',
+                animation: 'fadeInUp 0.55s 0.32s var(--ease-out-expo) both',
+                flexWrap: 'wrap',
+              }}
+            >
+              {WHY_US.slice(0, 3).map(s => (
+                <div key={s.id}>
+                  <p style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', fontWeight: 600, color: current.accentColor, lineHeight: 1, letterSpacing: '-0.02em' }}>
+                    {s.num}
+                  </p>
+                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', marginTop: '0.25rem' }}>
+                    {s.label}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Slide Controls */}
+        {/* Slide controls */}
         <div
           style={{
             position: 'absolute',
-            bottom: '2rem',
+            bottom: '2.5rem',
             left: '50%',
             transform: 'translateX(-50%)',
             display: 'flex',
             alignItems: 'center',
-            gap: '1.25rem',
+            gap: '1.5rem',
             zIndex: 5,
           }}
         >
           <button
-            aria-label="Previous Slide"
+            id="hero-prev"
+            aria-label="Previous slide"
             onClick={() => goToSlide((slide - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
             style={{
-              width: '2.25rem', height: '2.25rem', borderRadius: '50%',
-              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)',
-              color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '32px', height: '32px', borderRadius: '50%',
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: 'rgba(255,255,255,0.6)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', transition: 'all 200ms ease',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'var(--clr-brand)'; e.currentTarget.style.color = '#fff'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--clr-brand)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--clr-brand)'; (e.currentTarget as HTMLElement).style.color = '#fff'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.15)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.6)'; }}
           >
             <IconChevronLeft />
           </button>
 
-          <div style={{ display: 'flex', gap: '0.375rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
             {HERO_SLIDES.map((_, i) => (
               <button
                 key={i}
-                aria-label={`Slide index ${i}`}
+                id={`hero-dot-${i}`}
+                aria-label={`Go to slide ${i + 1}`}
                 onClick={() => goToSlide(i)}
                 style={{
                   height: '2px',
-                  width: i === slide ? '28px' : '12px',
+                  width: i === slide ? '32px' : '16px',
                   background: i === slide ? 'var(--clr-brand)' : 'rgba(255,255,255,0.25)',
                   border: 'none',
                   cursor: 'pointer',
                   transition: 'all 300ms var(--ease-out-expo)',
+                  borderRadius: '1px',
                 }}
               />
             ))}
           </div>
 
           <button
-            aria-label="Next Slide"
+            id="hero-next"
+            aria-label="Next slide"
             onClick={() => goToSlide((slide + 1) % HERO_SLIDES.length)}
             style={{
-              width: '2.25rem', height: '2.25rem', borderRadius: '50%',
-              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)',
-              color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '32px', height: '32px', borderRadius: '50%',
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: 'rgba(255,255,255,0.6)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', transition: 'all 200ms ease',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'var(--clr-brand)'; e.currentTarget.style.color = '#fff'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--clr-brand)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--clr-brand)'; (e.currentTarget as HTMLElement).style.color = '#fff'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.15)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.6)'; }}
           >
             <IconChevronRight />
           </button>
@@ -406,9 +445,10 @@ export default function HomePage() {
       </section>
 
       {/* ══════════════════════════════════════════════════
-          SCROLLING MARQUEE
+          MARQUEE TICKER
       ══════════════════════════════════════════════════ */}
       <div
+        id="marquee-ticker"
         style={{
           background: 'var(--clr-brand)',
           padding: '0.625rem 0',
@@ -423,14 +463,15 @@ export default function HomePage() {
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '2rem',
-                paddingRight: '4rem',
+                gap: '2.5rem',
+                paddingRight: '5rem',
                 fontFamily: 'var(--font-mono)',
                 fontSize: '0.6875rem',
+                fontWeight: 400,
+                letterSpacing: '0.1em',
                 textTransform: 'uppercase',
-                color: '#fff',
+                color: 'rgba(255,255,255,0.9)',
                 whiteSpace: 'nowrap',
-                letterSpacing: '0.08em',
               }}
             >
               {item}
@@ -441,21 +482,30 @@ export default function HomePage() {
       </div>
 
       {/* ══════════════════════════════════════════════════
-          TRUST STRIP (BNPL Localized)
+          TRUST STRIP
       ══════════════════════════════════════════════════ */}
-      <section style={{ background: '#fff', borderBottom: '1px solid var(--clr-border-2)', padding: '2.5rem 0' }}>
+      <section
+        id="trust-strip"
+        style={{ background: '#fff', borderBottom: '1px solid var(--clr-border-2)', padding: '2.5rem 0' }}
+      >
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '1rem',
+            }}
+          >
             {TRUST_ITEMS.map(t => (
-              <div key={t.id} className="trust-item">
+              <div key={t.id} id={`trust-${t.id}`} className="trust-item">
                 <div className="trust-icon">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                     <path d={t.iconPath} />
                   </svg>
                 </div>
                 <div>
-                  <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--clr-text)', marginBottom: '0.15rem' }}>{t.title}</h4>
-                  <p style={{ fontSize: '0.76rem', color: 'var(--clr-text-2)', lineHeight: 1.5 }}>{t.body}</p>
+                  <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--clr-text)', marginBottom: '0.2rem' }}>{t.title}</p>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--clr-text-2)', lineHeight: 1.6 }}>{t.body}</p>
                 </div>
               </div>
             ))}
@@ -464,59 +514,105 @@ export default function HomePage() {
       </section>
 
       {/* ══════════════════════════════════════════════════
-          EDITORIAL DEPARTMENTS GRID
+          CATEGORIES
       ══════════════════════════════════════════════════ */}
-      <section style={{ padding: '4.5rem 0', background: 'var(--warm-50)' }}>
+      <section id="categories" style={{ padding: 'var(--space-section) 0', background: 'var(--warm-50)' }}>
         <div className="container">
           <div className="section-header-center">
-            <span className="label-eyebrow">Departments</span>
-            <h2 className="heading-xl">Shop by Segment</h2>
+            <span className="label-eyebrow">Browse</span>
+            <h2 className="heading-xl">Shop by Category</h2>
             <span className="section-rule" />
           </div>
 
-          <div className="dept-grid">
-            {DEPARTMENTS.map((dept, idx) => (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(5, 1fr)',
+              gap: '0.875rem',
+            }}
+          >
+            {CATEGORIES.map((cat, idx) => (
               <Link
-                key={dept.id}
-                href={dept.href}
-                className="animate-fade-in-up"
+                key={cat.id}
+                href={cat.href}
+                id={`cat-${cat.id}`}
+                className="cat-card animate-fade-in-up"
                 style={{
                   display: 'block',
-                  position: 'relative',
-                  aspectRatio: '3/4',
+                  textDecoration: 'none',
+                  animationDelay: `${idx * 0.06}s`,
                   borderRadius: 'var(--r-md)',
                   overflow: 'hidden',
-                  boxShadow: 'var(--shadow-sm)',
-                  animationDelay: `${idx * 0.08}s`,
                 }}
               >
-                {/* Background image under dark overlay */}
-                <Image
-                  src={dept.img}
-                  alt={dept.label}
-                  fill
-                  style={{ objectFit: 'cover', transition: 'transform 0.4s ease' }}
-                  className="dept-image"
-                />
                 <div
+                  className="cat-card-inner"
                   style={{
-                    position: 'absolute', inset: 0,
-                    background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)',
-                    zIndex: 1,
+                    background: cat.bg,
+                    aspectRatio: '3 / 4',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-end',
+                    padding: '1.25rem',
+                    position: 'relative',
                   }}
-                />
-
-                {/* Content Overlay */}
-                <div style={{ position: 'absolute', bottom: '1.5rem', left: '1.5rem', right: '1.5rem', zIndex: 2 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--clr-brand)', display: 'block', marginBottom: '0.2rem' }}>
-                    {dept.subLabel}
-                  </span>
-                  <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 600, color: '#fff', marginBottom: '0.5rem' }}>
-                    {dept.label}
-                  </h3>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}>
-                    Shop Now <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                  </span>
+                >
+                  {/* Subtle texture */}
+                  <div
+                    style={{
+                      position: 'absolute', inset: 0,
+                      backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.012) 0, rgba(255,255,255,0.012) 1px, transparent 0, transparent 50%)',
+                      backgroundSize: '14px 14px',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                  {/* Gradient overlay */}
+                  <div
+                    className="cat-card-overlay"
+                    style={{ position: 'absolute', inset: 0 }}
+                  />
+                  {/* Text */}
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    <p
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.58rem',
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        color: 'rgba(255,255,255,0.5)',
+                        marginBottom: '0.3rem',
+                      }}
+                    >
+                      {cat.subLabel}
+                    </p>
+                    <h3
+                      style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '1.2rem',
+                        fontWeight: 600,
+                        color: '#fff',
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {cat.label}
+                    </h3>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.375rem',
+                        marginTop: '0.625rem',
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.6rem',
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        color: 'var(--clr-brand)',
+                      }}
+                    >
+                      View All
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </div>
+                  </div>
                 </div>
               </Link>
             ))}
@@ -525,24 +621,38 @@ export default function HomePage() {
       </section>
 
       {/* ══════════════════════════════════════════════════
-          UNIFORM COLLECTION (Specialist Range)
+          UNIFORM COLLECTION
       ══════════════════════════════════════════════════ */}
       <section id="uniforms" style={{ padding: 'var(--space-section) 0', background: 'var(--obsidian-950)' }}>
         <div className="container">
-          <div className="section-header-center" style={{ marginBottom: '3.5rem' }}>
+          <div className="section-header-center">
             <span className="label-eyebrow" style={{ color: 'rgba(255,255,255,0.4)' }}>Specialist Range</span>
-            <h2 className="heading-xl" style={{ color: '#fff', marginTop: '0.5rem', marginBottom: '1rem' }}>Uniform Collection</h2>
-            <span className="section-rule" style={{ background: 'rgba(255,255,255,0.15)', margin: '0 auto' }} />
-            <p style={{ marginTop: '1.25rem', color: 'rgba(255,255,255,0.45)', fontSize: '0.9rem', lineHeight: 1.75, maxWidth: '520px', marginLeft: 'auto', marginRight: 'auto' }}>
-              Government &amp; private school uniforms, corporate office formal wear, and heavy-duty industrial workwear. Tailored to standard specification with durable, high-performance fabrics.
+            <h2
+              className="heading-xl"
+              style={{ color: '#fff' }}
+            >
+              Uniform Collection
+            </h2>
+            <span className="section-rule" />
+            <p
+              style={{
+                marginTop: '1.25rem',
+                color: 'rgba(255,255,255,0.45)',
+                fontSize: '0.9375rem',
+                lineHeight: 1.75,
+                maxWidth: '520px',
+              }}
+            >
+              Government &amp; private school uniforms, corporate formal wear, and industrial workwear — all under one roof, crafted with precision.
             </p>
           </div>
 
           <div
-            className="uniform-grid"
             style={{
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+              gap: '1px',
+              border: '1px solid rgba(255,255,255,0.07)',
               borderRadius: 'var(--r-md)',
               overflow: 'hidden',
             }}
@@ -557,25 +667,20 @@ export default function HomePage() {
                   display: 'block',
                   textDecoration: 'none',
                   background: seg.bg,
-                  padding: '2.5rem 2rem',
-                  transition: 'all 300ms ease',
-                  animationDelay: `${idx * 0.08}s`,
+                  padding: '2.25rem 1.75rem',
+                  borderRight: idx % 2 === 0 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                  transition: 'background 300ms ease',
+                  animationDelay: `${idx * 0.07}s`,
                   position: 'relative',
                   overflow: 'hidden',
                 }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = 'var(--obsidian-900)';
-                  e.currentTarget.style.boxShadow = 'inset 0 0 40px rgba(204,0,0,0.15)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = seg.bg;
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${seg.bg.slice(0, seg.bg.lastIndexOf(','))} , rgba(204,0,0,0.06))`; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = seg.bg; }}
               >
                 {seg.badge && (
                   <span
                     className="badge badge-brand"
-                    style={{ marginBottom: '1.25rem', display: 'inline-flex', background: 'var(--clr-brand)', color: '#fff', fontSize: '0.62rem', padding: '0.2rem 0.5rem', borderRadius: 'var(--r-xs)', fontWeight: 600, fontFamily: 'var(--font-mono)' }}
+                    style={{ marginBottom: '1.25rem', display: 'inline-flex' }}
                   >
                     {seg.badge}
                   </span>
@@ -583,7 +688,7 @@ export default function HomePage() {
                 <h3
                   style={{
                     fontFamily: 'var(--font-serif)',
-                    fontSize: '1.3rem',
+                    fontSize: '1.25rem',
                     fontWeight: 600,
                     color: '#fff',
                     lineHeight: 1.25,
@@ -594,10 +699,10 @@ export default function HomePage() {
                 </h3>
                 <p
                   style={{
-                    fontSize: '0.82rem',
-                    lineHeight: 1.7,
+                    fontSize: '0.8125rem',
+                    lineHeight: 1.75,
                     color: 'rgba(255,255,255,0.45)',
-                    marginBottom: '1.75rem',
+                    marginBottom: '1.5rem',
                   }}
                 >
                   {seg.description}
@@ -609,7 +714,7 @@ export default function HomePage() {
                     gap: '0.5rem',
                     fontFamily: 'var(--font-mono)',
                     fontSize: '0.65rem',
-                    fontWeight: 600,
+                    fontWeight: 500,
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase',
                     color: 'var(--clr-brand)',
@@ -617,80 +722,64 @@ export default function HomePage() {
                   }}
                 >
                   Shop Now
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </span>
               </Link>
             ))}
           </div>
 
-          <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+          <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
             <Link href="/products?category=uniforms" id="view-all-uniforms" className="btn btn-ghost-white btn-lg">
               View Entire Uniform Range
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: '0.5rem' }}><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </Link>
           </div>
         </div>
       </section>
 
       {/* ══════════════════════════════════════════════════
-          DYNAMIC TABBED SHOWCASE
+          LATEST ARRIVALS
       ══════════════════════════════════════════════════ */}
-      <section style={{ padding: '5rem 0', background: '#fff' }}>
+      <section id="latest-arrivals" style={{ padding: 'var(--space-section) 0', background: '#fff' }}>
         <div className="container">
-          <div className="section-header-center" style={{ marginBottom: '2rem' }}>
-            <span className="label-eyebrow">Discover</span>
-            <h2 className="heading-xl">Featured Showcase</h2>
-            <span className="section-rule" />
+          <div className="section-header">
+            <div>
+              <span className="label-eyebrow">Fresh In</span>
+              <h2 className="heading-xl" style={{ marginTop: '0.625rem' }}>Latest Arrivals</h2>
+            </div>
+            <Link
+              href="/products?sort=newest"
+              id="view-all-products"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.65rem',
+                fontWeight: 500,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: 'var(--clr-brand)',
+                textDecoration: 'none',
+                paddingBottom: '1px',
+                borderBottom: '1px solid var(--clr-brand)',
+                transition: 'gap 200ms ease',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.gap = '0.875rem')}
+              onMouseLeave={e => (e.currentTarget.style.gap = '0.5rem')}
+            >
+              View All Products <IconArrow />
+            </Link>
           </div>
 
-          {/* Selector Tabs */}
-          <div className="tabs-scroller">
-            {[
-              { id: 'new', label: 'New Arrivals' },
-              { id: 'trending', label: 'Trending Items' },
-              { id: 'premium', label: 'Premium Selection' },
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                style={{
-                  padding: '0.5rem 1.25rem',
-                  fontSize: '0.78rem',
-                  fontFamily: 'var(--font-mono)',
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  borderBottom: `2px solid ${activeTab === tab.id ? 'var(--clr-brand)' : 'transparent'}`,
-                  color: activeTab === tab.id ? 'var(--clr-text)' : 'var(--clr-text-3)',
-                  fontWeight: activeTab === tab.id ? 600 : 400,
-                  transition: 'all 200ms ease',
-                  cursor: 'pointer',
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Loader or Grid */}
-          {productsLoading ? (
-            <div className="product-grid animate-fade-in">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="skeleton-product-card">
-                  <div className="skeleton-image" />
-                  <div className="skeleton-info">
-                    <div className="skeleton-line tag" />
-                    <div className="skeleton-line title-1" />
-                    <div className="skeleton-line price" />
-                  </div>
-                </div>
+          {loading ? (
+            <div className="product-grid">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="skeleton" style={{ aspectRatio: '3/4' }} />
               ))}
             </div>
-          ) : products.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '4rem 2rem', color: 'var(--clr-text-3)' }}>
-              No products found in this category.
-            </div>
           ) : (
-            <div className="product-grid animate-fade-in" key={activeTab}>
+            <div className="product-grid">
               {products.map((product, idx) => (
                 <ProductCard key={product.id} product={product} index={idx} />
               ))}
@@ -700,60 +789,144 @@ export default function HomePage() {
       </section>
 
       {/* ══════════════════════════════════════════════════
-          BUY NOW PAY LATER BANNER (Koko / Mintpay Integration)
+          SCHOOL UNIFORM BANNER
       ══════════════════════════════════════════════════ */}
       <section
+        id="school-banner"
         style={{
-          background: 'linear-gradient(135deg, var(--crimson-950) 0%, var(--obsidian-950) 100%)',
-          padding: '4.5rem 0',
+          background: 'linear-gradient(130deg, var(--crimson-900) 0%, var(--crimson-800) 40%, var(--crimson-700) 100%)',
+          padding: 'var(--space-section) 0',
           position: 'relative',
           overflow: 'hidden',
-          borderTop: '1px solid var(--clr-border-dark)',
-          borderBottom: '1px solid var(--clr-border-dark)',
         }}
       >
-        <div className="container">
-          <div className="koko-banner-grid">
+        {/* Texture */}
+        <div
+          style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: 'repeating-linear-gradient(135deg, rgba(255,255,255,0.012) 0, rgba(255,255,255,0.012) 1px, transparent 0, transparent 50%)',
+            backgroundSize: '20px 20px',
+            pointerEvents: 'none',
+          }}
+        />
+        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr auto',
+              gap: '3rem',
+              alignItems: 'center',
+            }}
+          >
             <div>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--clr-gold)', display: 'block', marginBottom: '0.75rem' }}>
-                Shop Smart In Sri Lanka
+              <span
+                style={{
+                  display: 'inline-block',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.62rem',
+                  fontWeight: 500,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: 'rgba(255,255,255,0.5)',
+                  marginBottom: '1.25rem',
+                }}
+              >
+                Back to School — Season Open
               </span>
-              <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.6rem, 3vw, 2.35rem)', color: '#fff', fontWeight: 600, lineHeight: 1.2, marginBottom: '0.75rem' }}>
-                Interest-Free Installments with Koko
+              <h2
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 'clamp(1.8rem, 3.5vw, 2.75rem)',
+                  fontWeight: 600,
+                  color: '#fff',
+                  lineHeight: 1.15,
+                  letterSpacing: '-0.01em',
+                  marginBottom: '1rem',
+                }}
+              >
+                School Uniform Orders Now Open
               </h2>
-              <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.7, maxWidth: '540px' }}>
-                Split any order above Rs. 3,000 into 3 completely interest-free monthly payments at checkout. Buy your school uniforms or festive dress materials today and pay later.
+              <p
+                style={{
+                  fontSize: '0.9375rem',
+                  lineHeight: 1.8,
+                  color: 'rgba(255,255,255,0.6)',
+                  maxWidth: '520px',
+                }}
+              >
+                Government and private school uniforms crafted to specification. Bulk orders welcome with competitive pricing for institutions.
               </p>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: '220px' }}>
-              <Link href="/products" className="btn btn-brand btn-lg" style={{ justifyContent: 'center' }}>
-                Shop Collection Now
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flexShrink: 0 }}>
+              <Link
+                href="/products?category=uniforms&sub=government-school"
+                id="banner-govt-uniforms"
+                className="btn btn-white btn-lg"
+                style={{ minWidth: '230px', justifyContent: 'center' }}
+              >
+                Government School Uniforms
               </Link>
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', color: 'rgba(255,255,255,0.3)', fontSize: '0.65rem', fontFamily: 'var(--font-mono)' }}>
-                <span>● KOKO</span>
-                <span>● MINTPAY</span>
-                <span>● VISA/MASTER</span>
-              </div>
+              <Link
+                href="/products?category=uniforms&sub=private-school"
+                id="banner-private-uniforms"
+                className="btn btn-ghost-white btn-lg"
+                style={{ minWidth: '230px', justifyContent: 'center' }}
+              >
+                Private School Uniforms
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
       {/* ══════════════════════════════════════════════════
-          OUR BRANDS SHOWCASE (Continuous Smooth Marquee)
+          OUR BRANDS SHOWCASE
       ══════════════════════════════════════════════════ */}
-      <section style={{ padding: '4.5rem 0', background: 'var(--warm-50)', borderBottom: '3px solid var(--clr-brand)', position: 'relative' }}>
-        <div className="container-fluid" style={{ overflow: 'hidden' }}>
+      <section
+        id="our-brands"
+        style={{
+          padding: '4.5rem 0',
+          background: 'var(--warm-50)',
+          borderTop: '1px solid var(--clr-border-2)',
+          borderBottom: '3px solid var(--clr-brand)',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div className="container">
           <div className="section-header-center" style={{ marginBottom: '2.5rem' }}>
-            <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: '1.15rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--clr-text)', margin: 0 }}>
+            <span className="label-eyebrow">Partners</span>
+            <h2
+              style={{
+                fontFamily: 'var(--font-sans)',
+                fontSize: '1.15rem',
+                fontWeight: 700,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: 'var(--clr-text)',
+                margin: 0,
+              }}
+            >
               Our Brands
             </h2>
             <span className="section-rule" />
+            <p style={{ marginTop: '0.75rem', color: 'var(--clr-text-2)', fontSize: '0.875rem' }}>
+              Trusted partners crafting premium quality fabrics and fashion for Sri Lanka
+            </p>
           </div>
 
-          <div className="brands-marquee-container">
+          {/* Continuous scrolling brand marquee */}
+          <div
+            className="brands-marquee-container"
+            style={{
+              overflow: 'hidden',
+              position: 'relative',
+            }}
+            onMouseEnter={e => (e.currentTarget.querySelector('.brands-marquee-track') as HTMLElement | null)?.style.setProperty('animation-play-state', 'paused')}
+            onMouseLeave={e => (e.currentTarget.querySelector('.brands-marquee-track') as HTMLElement | null)?.style.setProperty('animation-play-state', 'running')}
+          >
             <div className="brands-marquee-track">
-              {marqueeBrands.map((brand, idx) => {
+              {[...BRANDS, ...BRANDS, ...BRANDS, ...BRANDS].map((brand, idx) => {
                 const BrandLogo = brand.render;
                 return (
                   <div key={idx} className="brand-slide">
@@ -768,48 +941,153 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section id="why-us" style={{ padding: 'var(--space-section) 0', background: 'var(--warm-50)' }}>
+        <div className="container">
+          <div className="section-header-center">
+            <span className="label-eyebrow">Our Story</span>
+            <h2 className="heading-xl">Why Nandana Textile?</h2>
+            <span className="section-rule" />
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '1px',
+              background: 'var(--clr-border)',
+              border: '1px solid var(--clr-border)',
+              borderRadius: 'var(--r-md)',
+              overflow: 'hidden',
+            }}
+          >
+            {WHY_US.map((item, idx) => (
+              <div
+                key={item.id}
+                id={`why-${item.id}`}
+                style={{
+                  background: '#fff',
+                  padding: '2.5rem 2rem',
+                  transition: 'background 200ms ease',
+                  cursor: 'default',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--warm-50)')}
+                onMouseLeave={e => (e.currentTarget.style.background = '#fff')}
+              >
+                <p
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '3rem',
+                    fontWeight: 600,
+                    lineHeight: 1,
+                    letterSpacing: '-0.03em',
+                    color: 'var(--clr-brand)',
+                    marginBottom: '0.5rem',
+                  }}
+                >
+                  {item.num}
+                </p>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.6rem',
+                    fontWeight: 500,
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    color: 'var(--clr-text-3)',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  {item.label}
+                </p>
+                <p
+                  style={{
+                    fontSize: '0.8125rem',
+                    lineHeight: 1.75,
+                    color: 'var(--clr-text-2)',
+                  }}
+                >
+                  {item.body}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ══════════════════════════════════════════════════
-          NEWSLETTER SIGNUP
+          FINAL CTA
       ══════════════════════════════════════════════════ */}
       <section
+        id="final-cta"
         style={{
           background: 'var(--obsidian-950)',
-          padding: '5rem 0',
+          padding: 'var(--space-section) 0',
           textAlign: 'center',
           position: 'relative',
+          overflow: 'hidden',
         }}
       >
-        <div className="container-xs" style={{ position: 'relative', zIndex: 2 }}>
-          <span className="label-eyebrow" style={{ color: 'rgba(255,255,255,0.3)' }}>Join the Club</span>
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)', color: '#fff', fontWeight: 600, marginTop: '0.5rem', marginBottom: '1rem' }}>
-            Subscribe to our Lookbook
+        <div
+          style={{
+            position: 'absolute', inset: 0,
+            background: 'radial-gradient(ellipse 60% 55% at 50% 50%, rgba(204,0,0,0.07) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }}
+        />
+        <div className="container-xs" style={{ position: 'relative', zIndex: 1 }}>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.62rem',
+              fontWeight: 400,
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              color: 'rgba(255,255,255,0.35)',
+              marginBottom: '1.75rem',
+            }}
+          >
+            <span style={{ display: 'block', width: '20px', height: '1px', background: 'rgba(255,255,255,0.2)' }} />
+            Nandana Textile — Est. 2009
+            <span style={{ display: 'block', width: '20px', height: '1px', background: 'rgba(255,255,255,0.2)' }} />
+          </span>
+
+          <h2
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 'clamp(2rem, 4vw, 3.25rem)',
+              fontWeight: 600,
+              color: '#fff',
+              lineHeight: 1.12,
+              letterSpacing: '-0.01em',
+              marginBottom: '1.25rem',
+            }}
+          >
+            Quality Textiles for Every Sri Lankan
           </h2>
-          <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.7, marginBottom: '2.5rem' }}>
-            Receive seasonal trend reports, early access to sales events, and customized bulk offers straight to your inbox.
+
+          <p
+            style={{
+              fontSize: '0.9375rem',
+              lineHeight: 1.8,
+              color: 'rgba(255,255,255,0.45)',
+              marginBottom: '2.5rem',
+            }}
+          >
+            From school uniforms to evening sarees — trusted by thousands of families across the island.
           </p>
 
-          <form onSubmit={e => e.preventDefault()} style={{ display: 'flex', gap: '0.5rem', maxWidth: '440px', margin: '0 auto' }}>
-            <input
-              type="email"
-              placeholder="Your email address"
-              required
-              style={{
-                flex: 1,
-                padding: '0.75rem 1rem',
-                fontSize: '0.875rem',
-                color: '#fff',
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                borderRadius: 'var(--r-xs)',
-                outline: 'none',
-              }}
-              onFocus={e => e.target.style.borderColor = 'var(--clr-brand)'}
-              onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.12)'}
-            />
-            <button type="submit" className="btn btn-brand" style={{ padding: '0 1.5rem', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)' }}>
-              Join
-            </button>
-          </form>
+          <div style={{ display: 'flex', gap: '0.875rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/products" id="final-cta-shop" className="btn btn-brand btn-xl">
+              Shop Now
+              <IconArrow />
+            </Link>
+            <Link href="/products?category=uniforms" id="final-cta-uniforms" className="btn btn-ghost-white btn-xl">
+              View Uniforms
+            </Link>
+          </div>
         </div>
       </section>
 

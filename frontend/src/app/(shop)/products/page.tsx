@@ -26,7 +26,6 @@ function ProductsContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showFilters, setShowFilters] = useState(false);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
 
   // Draft local state for inputs so typing doesn't trigger API requests immediately
@@ -93,7 +92,6 @@ function ProductsContent() {
       params.delete('page');
     }
 
-    setShowFilters(false);
     router.push(`${pathname}?${params.toString()}`);
   };
 
@@ -115,34 +113,9 @@ function ProductsContent() {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '2.5rem', flexWrap: 'wrap' }}>
-          {/* Mobile Filter Toggle Button */}
-          <button
-            onClick={() => setShowFilters(s => !s)}
-            className="show-mobile btn btn-outline"
-            style={{
-              width: '100%',
-              display: 'none',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              marginBottom: '1.25rem',
-              padding: '0.625rem 1rem',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              fontFamily: 'var(--font-mono)',
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-            }}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-            </svg>
-            {showFilters ? 'Hide Filters & Sort' : 'Filter & Sort Products'}
-          </button>
-
+        <div className="products-layout">
           {/* Sidebar Filters */}
-          <aside className={`catalog-sidebar ${showFilters ? 'open' : ''}`}>
+          <aside className="products-sidebar">
             {/* Search */}
             <form onSubmit={handleSearch} style={{ marginBottom: '1.75rem' }}>
               <label className="input-label" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.5rem' }}>Search</label>

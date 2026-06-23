@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useCartStore } from '@/store/useCartStore';
+import { useWishlistStore } from '@/store/useWishlistStore';
 
 /* ── SVG Icon Components ──────────────────────────────────── */
 const IconSearch = ({ size = 18 }: { size?: number }) => (
@@ -50,6 +51,11 @@ const IconChevronRight = ({ size = 13 }: { size?: number }) => (
 const IconArrowRight = ({ size = 14 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+  </svg>
+);
+const IconHeart = ({ size = 19, filled = false }: { size?: number; filled?: boolean }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
   </svg>
 );
 
@@ -260,6 +266,7 @@ export default function Header() {
   const { user, isAuthenticated, logout } = useAuthStore();
   const items           = useCartStore(s => s.items) || [];
   const cartCount       = items.reduce((s, i) => s + i.quantity, 0);
+  const wishlistCount   = useWishlistStore(s => s.items.length);
 
   const [scrolled,        setScrolled]        = useState(false);
   const [mobileOpen,      setMobileOpen]      = useState(false);
@@ -442,6 +449,57 @@ export default function Header() {
             >
               <IconSearch size={17} />
             </button>
+
+            {/* Wishlist */}
+            <Link
+              href="/wishlist"
+              id="wishlist-btn"
+              aria-label="Wishlist"
+              style={{
+                position: 'relative',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '2.5rem',
+                height: '2.5rem',
+                color: mounted && wishlistCount > 0 ? 'var(--clr-brand)' : 'var(--clr-text-2)',
+                borderRadius: 'var(--r-sm)',
+                transition: 'color 150ms ease, background 150ms ease',
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.color = 'var(--clr-brand)';
+                (e.currentTarget as HTMLElement).style.background = 'var(--clr-brand-tint)';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.color = mounted && wishlistCount > 0 ? 'var(--clr-brand)' : 'var(--clr-text-2)';
+                (e.currentTarget as HTMLElement).style.background = 'transparent';
+              }}
+            >
+              <IconHeart size={19} filled={mounted && wishlistCount > 0} />
+              {mounted && wishlistCount > 0 && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: '4px',
+                    right: '4px',
+                    width: '16px',
+                    height: '16px',
+                    borderRadius: '50%',
+                    background: 'var(--clr-brand)',
+                    color: '#fff',
+                    fontSize: '0.55rem',
+                    fontWeight: 700,
+                    fontFamily: 'var(--font-mono)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '1.5px solid #fff',
+                  }}
+                >
+                  {wishlistCount > 9 ? '9+' : wishlistCount}
+                </span>
+              )}
+            </Link>
 
             {/* Cart */}
             <Link
@@ -734,10 +792,41 @@ export default function Header() {
       )}
 
       {/* ── Mobile Overlay ────────────────────────────────── */}
-      <div className={`mobile-overlay ${mobileOpen ? 'open' : ''}`} onClick={closeMobile} />
+      <div
+        onClick={closeMobile}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.55)',
+          backdropFilter: 'blur(2px)',
+          zIndex: 490,
+          opacity: mobileOpen ? 1 : 0,
+          visibility: mobileOpen ? 'visible' : 'hidden',
+          transition: 'opacity 0.4s ease, visibility 0.4s',
+          pointerEvents: mobileOpen ? 'all' : 'none',
+        }}
+      />
 
       {/* ── Mobile Drawer ─────────────────────────────────── */}
-      <div id="mobile-drawer" className={`mobile-drawer ${mobileOpen ? 'open' : ''}`}>
+      <div
+        id="mobile-drawer"
+        style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 'auto',
+          width: 'min(85vw, 360px)',
+          background: 'var(--clr-surface)',
+          zIndex: 491,
+          transform: mobileOpen ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: 'var(--shadow-xl)',
+          overflowY: 'auto',
+        }}
+      >
         {/* Drawer Header */}
         <div
           style={{

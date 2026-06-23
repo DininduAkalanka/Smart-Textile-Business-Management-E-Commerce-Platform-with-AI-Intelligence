@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { Product } from '@/types';
 import { useCartStore } from '@/store/useCartStore';
+import { useWishlistStore } from '@/store/useWishlistStore';
 
 /* ── Color palette for placeholder backgrounds ─────────────── */
 const PLATE_BG = [
@@ -28,8 +29,10 @@ interface Props {
 }
 
 export default function ProductCard({ product, index = 0 }: Props) {
-  const addItem = useCartStore(s => s.addItem);
-  const [wishlisted, setWishlisted] = useState(false);
+  const addItem        = useCartStore(s => s.addItem);
+  const toggleItem     = useWishlistStore(s => s.toggleItem);
+  const isWishlisted   = useWishlistStore(s => s.isWishlisted);
+  const wishlisted     = isWishlisted(product.id);
   const [cartState,  setCartState]  = useState<'idle' | 'added'>('idle');
 
   const discount = product.compareAtPrice
@@ -50,7 +53,7 @@ export default function ProductCard({ product, index = 0 }: Props) {
   function handleWishlist(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    setWishlisted(w => !w);
+    toggleItem(product);
   }
 
   return (
