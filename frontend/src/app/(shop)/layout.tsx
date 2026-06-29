@@ -6,6 +6,8 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AppPreloader from '@/components/layout/AppPreloader';
 import TopProgressBar from '@/components/layout/TopProgressBar';
+import QuickViewModal from '@/components/products/QuickViewModal';
+import VisualSearchModal from '@/components/products/VisualSearchModal';
 
 export default function ShopLayout({
   children,
@@ -27,6 +29,9 @@ export default function ShopLayout({
       <Header />
       <main style={{ flex: 1 }}>{children}</main>
       <Footer />
+      <QuickViewModal />
+      <VisualSearchModal />
     </div>
   );
 }
+

@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Product } from '@/types';
 import { useCartStore } from '@/store/useCartStore';
 import { useWishlistStore } from '@/store/useWishlistStore';
+import { useModalStore } from '@/store/useModalStore';
 
 /* ── Color palette for placeholder backgrounds ─────────────── */
 const PLATE_BG = [
@@ -31,9 +32,31 @@ interface Props {
 export default function ProductCard({ product, index = 0 }: Props) {
   const addItem        = useCartStore(s => s.addItem);
   const toggleItem     = useWishlistStore(s => s.toggleItem);
-  const isWishlisted   = useWishlistStore(s => s.isWishlisted);
-  const wishlisted     = isWishlisted(product.id);
+  const wishlistItems  = useWishlistStore(s => s.items);
+  const openQuickView  = useModalStore(s => s.openQuickView);
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const wishlisted     = mounted && wishlistItems.some(i => i.id === product.id);
   const [cartState,  setCartState]  = useState<'idle' | 'added'>('idle');
+
+  console.log('ProductCard Render:', {
+    id: product.id,
+    name: product.name,
+    mounted,
+    wishlistItemsCount: wishlistItems.length,
+    wishlisted,
+  });
+
+  const initialImg = product.images && product.images.length > 0 ? product.images[0] : `/images/prod${(index % 3) + 1}.png`;
+  const [imgSrc, setImgSrc] = useState<string>(initialImg);
+
+  useEffect(() => {
+    setImgSrc(product.images && product.images.length > 0 ? product.images[0] : `/images/prod${(index % 3) + 1}.png`);
+  }, [product.images, index]);
 
   const discount = product.compareAtPrice
     ? Math.round((1 - Number(product.price) / Number(product.compareAtPrice)) * 100)
@@ -53,6 +76,10 @@ export default function ProductCard({ product, index = 0 }: Props) {
   function handleWishlist(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
+    console.log('handleWishlist Clicked:', {
+      productId: product.id,
+      alreadyWishlisted: wishlisted,
+    });
     toggleItem(product);
   }
 
@@ -80,13 +107,14 @@ export default function ProductCard({ product, index = 0 }: Props) {
         (e.currentTarget as HTMLElement).style.transform = 'none';
       }}
     >
-      {/* ── Image ───────────────────────────────────────────── */}
-      <Link
-        href={`/products/${product.slug}`}
-        aria-label={product.name}
-        style={{ display: 'block', textDecoration: 'none' }}
-      >
-        <div className="product-card-img-wrap" style={{ aspectRatio: '3/4' }}>
+      {/* ── Image Wrapper ────────────────────────────────────── */}
+      <div className="product-card-img-wrap" style={{ aspectRatio: '3/4', position: 'relative' }}>
+        {/* The main click target link for the product details */}
+        <Link
+          href={`/products/${product.slug}`}
+          aria-label={product.name}
+          style={{ display: 'block', width: '100%', height: '100%' }}
+        >
           {/* Product Image */}
           <div
             className="product-card-img-inner"
@@ -99,74 +127,77 @@ export default function ProductCard({ product, index = 0 }: Props) {
             }}
           >
             <Image
-              src={product.images && product.images.length > 0 ? product.images[0] : `/images/prod${(index % 3) + 1}.png`}
+              src={imgSrc}
               alt={product.name}
               fill
+              unoptimized
+              onError={() => setImgSrc(`/images/prod${(index % 3) + 1}.png`)}
               style={{ objectFit: 'cover' }}
               sizes="(max-width: 768px) 50vw, 25vw"
             />
           </div>
+        </Link>
 
-          {/* Quick-view overlay */}
-          <div
-            className="product-card-actions"
+        {/* Quick-view overlay */}
+        <div className="product-card-actions">
+          <button
+            onClick={handleCart}
+            id={`add-cart-${product.id}`}
+            disabled={cartState === 'added'}
+            style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              padding: '0.625rem 1rem',
+              background: cartState === 'added' ? '#16a34a' : 'var(--clr-brand)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 'var(--r-xs)',
+              fontSize: '0.72rem',
+              fontWeight: 600,
+              fontFamily: 'var(--font-mono)',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              cursor: cartState === 'added' ? 'default' : 'pointer',
+              transition: 'background 200ms ease',
+            }}
           >
-            <button
-              onClick={handleCart}
-              id={`add-cart-${product.id}`}
-              disabled={cartState === 'added'}
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                padding: '0.625rem 1rem',
-                background: cartState === 'added' ? '#16a34a' : 'var(--clr-brand)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 'var(--r-xs)',
-                fontSize: '0.72rem',
-                fontWeight: 600,
-                fontFamily: 'var(--font-mono)',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                cursor: cartState === 'added' ? 'default' : 'pointer',
-                transition: 'background 200ms ease',
-              }}
-            >
-              {cartState === 'added' ? (
-                <>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                  Added
-                </>
-              ) : (
-                <>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-                    <line x1="3" y1="6" x2="21" y2="6"/>
-                    <path d="M16 10a4 4 0 0 1-8 0"/>
-                  </svg>
-                  Add to Bag
-                </>
-              )}
-            </button>
-          </div>
+            {cartState === 'added' ? (
+              <>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                Added
+              </>
+            ) : (
+              <>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                  <line x1="3" y1="6" x2="21" y2="6"/>
+                  <path d="M16 10a4 4 0 0 1-8 0"/>
+                </svg>
+                Add to Bag
+              </>
+            )}
+          </button>
+        </div>
 
-          {/* Wishlist button */}
+        {/* Overlay Action Buttons Stack (Wishlist, Quick View, Visual Search) */}
+        <div className="product-card-overlay-actions">
+          {/* Wishlist Button */}
           <button
             onClick={handleWishlist}
             id={`wishlist-${product.id}`}
             aria-label={wishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
-            className={`product-card-wishlist${wishlisted ? ' active' : ''}`}
+            className={`overlay-action-btn${wishlisted ? ' active wishlisted' : ''}`}
           >
             <svg
-              width="14"
-              height="14"
+              width="15"
+              height="15"
               viewBox="0 0 24 24"
-              fill={wishlisted ? 'currentColor' : 'none'}
-              stroke="currentColor"
-              strokeWidth="1.75"
+              fill={wishlisted ? '#cc0000' : 'none'}
+              stroke={wishlisted ? '#cc0000' : 'currentColor'}
+              strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
             >
@@ -174,16 +205,42 @@ export default function ProductCard({ product, index = 0 }: Props) {
             </svg>
           </button>
 
-          {/* Badges */}
-          <div style={{ position: 'absolute', top: '0.625rem', left: '0.625rem', display: 'flex', flexDirection: 'column', gap: '0.3rem', zIndex: 5 }}>
-            {discount > 0 && <span className="badge badge-brand">{discount}% Off</span>}
-            {isNew       && <span className="badge badge-dark">New</span>}
-            {product.stockQuantity <= 5 && product.stockQuantity > 0 && (
-              <span className="badge badge-gold">Low Stock</span>
-            )}
-          </div>
+          {/* Quick View Button */}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              openQuickView(product);
+            }}
+            id={`quick-view-${product.id}`}
+            aria-label="Quick view product"
+            className="overlay-action-btn"
+          >
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
         </div>
-      </Link>
+
+        {/* Badges */}
+        <div style={{ position: 'absolute', top: '0.625rem', left: '0.625rem', display: 'flex', flexDirection: 'column', gap: '0.3rem', zIndex: 5 }}>
+          {discount > 0 && <span className="badge badge-brand">{discount}% Off</span>}
+          {isNew       && <span className="badge badge-dark">New</span>}
+          {product.stockQuantity <= 5 && product.stockQuantity > 0 && (
+            <span className="badge badge-gold">Low Stock</span>
+          )}
+        </div>
+      </div>
 
       {/* ── Info ────────────────────────────────────────────── */}
       <div style={{ padding: '1.125rem 1.125rem 1.25rem', flex: 1, display: 'flex', flexDirection: 'column' }}>

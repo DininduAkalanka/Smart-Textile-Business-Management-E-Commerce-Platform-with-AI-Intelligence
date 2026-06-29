@@ -71,6 +71,10 @@ class ApiClient {
     categoryId?: string;
     categorySlug?: string;
     subCategory?: string;
+    collection?: string;
+    offers?: string;
+    tier?: string;
+    period?: string;
     minPrice?: number;
     maxPrice?: number;
     sortBy?: string;

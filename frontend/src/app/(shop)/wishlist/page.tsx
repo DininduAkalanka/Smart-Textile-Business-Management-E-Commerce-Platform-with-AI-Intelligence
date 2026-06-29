@@ -35,6 +35,13 @@ function WishlistCard({ product, index }: { product: Product; index: number }) {
   const addItem    = useCartStore(s => s.addItem);
   const [cartState, setCartState] = useState<'idle' | 'added'>('idle');
 
+  const initialImg = product.images && product.images.length > 0 ? product.images[0] : `/images/prod${(index % 3) + 1}.png`;
+  const [imgSrc, setImgSrc] = useState<string>(initialImg);
+
+  useEffect(() => {
+    setImgSrc(product.images && product.images.length > 0 ? product.images[0] : `/images/prod${(index % 3) + 1}.png`);
+  }, [product.images, index]);
+
   const discount = product.compareAtPrice
     ? Math.round((1 - Number(product.price) / Number(product.compareAtPrice)) * 100)
     : 0;
@@ -70,9 +77,11 @@ function WishlistCard({ product, index }: { product: Product; index: number }) {
       <Link href={`/products/${product.slug}`} style={{ display: 'block', textDecoration: 'none' }}>
         <div style={{ aspectRatio: '3/4', position: 'relative', overflow: 'hidden', background: 'var(--obsidian-950)' }}>
           <Image
-            src={product.images && product.images.length > 0 ? product.images[0] : `/images/prod${(index % 3) + 1}.png`}
+            src={imgSrc}
             alt={product.name}
             fill
+            unoptimized
+            onError={() => setImgSrc(`/images/prod${(index % 3) + 1}.png`)}
             style={{ objectFit: 'cover', transition: 'transform 400ms ease' }}
             sizes="(max-width: 768px) 50vw, 25vw"
             onMouseEnter={e => ((e.currentTarget as HTMLElement).style.transform = 'scale(1.04)')}

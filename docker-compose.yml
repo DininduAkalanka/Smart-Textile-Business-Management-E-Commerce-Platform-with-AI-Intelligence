@@ -57,14 +57,19 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
-    image: textile-frontend:latest
+      dockerfile: Dockerfile.dev
+    image: textile-frontend:dev
     container_name: textile_frontend
     restart: unless-stopped
     ports:
       - '3000:3000'
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:3001/api
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
     depends_on:
       - backend
 

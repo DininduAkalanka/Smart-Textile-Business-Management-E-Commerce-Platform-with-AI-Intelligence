@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useCartStore } from '@/store/useCartStore';
 import { useWishlistStore } from '@/store/useWishlistStore';
+import { useModalStore } from '@/store/useModalStore';
 
 /* ── SVG Icon Components ──────────────────────────────────── */
 const IconSearch = ({ size = 18 }: { size?: number }) => (
@@ -64,12 +65,12 @@ const NAV = [
   { label: 'Home', href: '/' },
   {
     label: 'New Arrivals',
-    href: '/products?sort=newest',
+    href: '/products?category=new-arrivals',
     dropdown: [
-      { label: 'Latest This Week',   href: '/products?sort=newest&period=week' },
-      { label: 'Trending Now',       href: '/products?sort=trending' },
-      { label: 'Premium Collection', href: '/products?tier=premium&sort=newest' },
-      { label: 'Special Offers',     href: '/products?offers=1' },
+      { label: 'Latest This Week',   href: '/products?category=new-arrivals&sub=latest-this-week' },
+      { label: 'Trending Now',       href: '/products?category=new-arrivals&sub=trending-now' },
+      { label: 'Premium Collection', href: '/products?category=new-arrivals&sub=premium-collection' },
+      { label: 'Special Offers',     href: '/products?category=new-arrivals&sub=special-offers' },
     ],
   },
   {
@@ -267,6 +268,7 @@ export default function Header() {
   const items           = useCartStore(s => s.items) || [];
   const cartCount       = items.reduce((s, i) => s + i.quantity, 0);
   const wishlistCount   = useWishlistStore(s => s.items.length);
+  const openVisualSearch = useModalStore(s => s.openVisualSearch);
 
   const [scrolled,        setScrolled]        = useState(false);
   const [mobileOpen,      setMobileOpen]      = useState(false);
@@ -764,6 +766,33 @@ export default function Header() {
                     fontFamily: 'var(--font-sans)',
                   }}
                 />
+                {/* Visual Search camera shortcut inside search bar */}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setSearchOpen(false);
+                    openVisualSearch();
+                  }}
+                  title="Search by image (AI Visual Search)"
+                  style={{
+                    color: 'var(--clr-text-3)',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '2px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'color 150ms ease',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = 'var(--clr-brand)'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = 'var(--clr-text-3)'}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                    <circle cx="12" cy="13" r="3" />
+                  </svg>
+                </button>
               </div>
               <button
                 onClick={() => setSearchOpen(false)}
