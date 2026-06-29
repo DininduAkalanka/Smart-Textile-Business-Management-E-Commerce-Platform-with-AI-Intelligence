@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { Product, Category } from '@/types';
 import ProductCard from '@/components/products/ProductCard';
+import ViewAsToolbar, { ViewMode } from '@/components/products/ViewAsToolbar';
 
 function ProductsContent() {
   const router = useRouter();
@@ -16,7 +17,12 @@ function ProductsContent() {
   const categoryId = searchParams.get('categoryId') || '';
   const categorySlug = searchParams.get('category') || '';
   const subCategory = searchParams.get('sub') || '';
-  const sortBy = searchParams.get('sortBy') || 'createdAt';
+  const collection = searchParams.get('collection') || '';
+  const offers = searchParams.get('offers') || '';
+  const tier = searchParams.get('tier') || '';
+  const period = searchParams.get('period') || '';
+  const sortParam = searchParams.get('sort') || '';
+  const sortBy = searchParams.get('sortBy') || (sortParam === 'newest' ? 'createdAt' : sortParam === 'trending' ? 'trending' : 'createdAt');
   const sortOrder = (searchParams.get('sortOrder') || 'desc') as 'asc' | 'desc';
   const minPrice = searchParams.get('minPrice') || '';
   const maxPrice = searchParams.get('maxPrice') || '';
@@ -27,6 +33,21 @@ function ProductsContent() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+
+  // View mode state with local storage persistence
+  const [viewMode, setViewMode] = useState<ViewMode>('grid-4');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('nandana_view_mode') as ViewMode;
+    if (saved && ['grid-2', 'grid-3', 'grid-4', 'list'].includes(saved)) {
+      setViewMode(saved);
+    }
+  }, []);
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    localStorage.setItem('nandana_view_mode', mode);
+  };
 
   // Draft local state for inputs so typing doesn't trigger API requests immediately
   const [searchDraft, setSearchDraft] = useState(search);
@@ -47,7 +68,7 @@ function ProductsContent() {
   useEffect(() => {
     let active = true;
     setLoading(true);
-    
+
     api.getProducts({
       page,
       limit: 12,
@@ -55,6 +76,10 @@ function ProductsContent() {
       categoryId: categoryId || undefined,
       categorySlug: categorySlug || undefined,
       subCategory: subCategory || undefined,
+      collection: collection || (categorySlug === 'new-arrivals' ? 'new-arrivals' : undefined),
+      offers: offers || (subCategory === 'special-offers' ? '1' : undefined),
+      tier: tier || (subCategory === 'premium-collection' ? 'premium' : undefined),
+      period: period || (subCategory === 'latest-this-week' ? 'week' : undefined),
       minPrice: minPrice ? Number(minPrice) : undefined,
       maxPrice: maxPrice ? Number(maxPrice) : undefined,
       sortBy,
@@ -73,12 +98,12 @@ function ProductsContent() {
     return () => {
       active = false;
     };
-  }, [page, search, categoryId, categorySlug, subCategory, minPrice, maxPrice, sortBy, sortOrder]);
+  }, [page, search, categoryId, categorySlug, subCategory, collection, offers, tier, period, sortParam, minPrice, maxPrice, sortBy, sortOrder]);
 
   // Push new parameters to URL
   const updateFilters = (newParams: Record<string, string | number | null | undefined>) => {
     const params = new URLSearchParams(searchParams.toString());
-    
+
     Object.entries(newParams).forEach(([key, value]) => {
       if (value === null || value === undefined || value === '') {
         params.delete(key);
@@ -145,30 +170,52 @@ function ProductsContent() {
               <label className="input-label" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.5rem' }}>Categories</label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
                 <button
-                  onClick={() => updateFilters({ categoryId: null, category: null, sub: null })}
+                  onClick={() => updateFilters({ categoryId: null, category: null, sub: null, collection: null, offers: null, tier: null, period: null })}
                   style={{
                     textAlign: 'left',
                     padding: '0.5rem 0.75rem',
-                    background: (!categoryId && !categorySlug) ? 'var(--clr-brand)' : 'transparent',
-                    color: (!categoryId && !categorySlug) ? '#white' : 'var(--clr-text)',
+                    background: (!categoryId && !categorySlug && !collection) ? 'var(--clr-brand)' : 'transparent',
+                    color: (!categoryId && !categorySlug && !collection) ? 'white' : 'var(--clr-text)',
                     border: 'none',
                     borderRadius: 'var(--r-sm)',
                     fontSize: '0.85rem',
-                    fontWeight: (!categoryId && !categorySlug) ? 600 : 400,
+                    fontWeight: (!categoryId && !categorySlug && !collection) ? 600 : 400,
                     cursor: 'pointer',
                     transition: 'all 150ms ease',
                   }}
-                  onMouseEnter={(e) => { if (categoryId || categorySlug) e.currentTarget.style.background = 'var(--clr-brand-tint)'; }}
-                  onMouseLeave={(e) => { if (categoryId || categorySlug) e.currentTarget.style.background = 'transparent'; }}
+                  onMouseEnter={(e) => { if (categoryId || categorySlug || collection) e.currentTarget.style.background = 'var(--clr-brand-tint)'; }}
+                  onMouseLeave={(e) => { if (categoryId || categorySlug || collection) e.currentTarget.style.background = 'transparent'; }}
                 >
                   All Categories
                 </button>
+
+                {/* New Arrivals Category item */}
+                <button
+                  onClick={() => updateFilters({ categoryId: null, category: 'new-arrivals', sub: null, collection: 'new-arrivals' })}
+                  style={{
+                    textAlign: 'left',
+                    padding: '0.5rem 0.75rem',
+                    background: (categorySlug === 'new-arrivals' || collection === 'new-arrivals') ? 'var(--clr-brand)' : 'transparent',
+                    color: (categorySlug === 'new-arrivals' || collection === 'new-arrivals') ? 'white' : 'var(--clr-text)',
+                    border: 'none',
+                    borderRadius: 'var(--r-sm)',
+                    fontSize: '0.85rem',
+                    fontWeight: (categorySlug === 'new-arrivals' || collection === 'new-arrivals') ? 600 : 400,
+                    cursor: 'pointer',
+                    transition: 'all 150ms ease',
+                  }}
+                  onMouseEnter={(e) => { if (categorySlug !== 'new-arrivals' && collection !== 'new-arrivals') e.currentTarget.style.background = 'var(--clr-brand-tint)'; }}
+                  onMouseLeave={(e) => { if (categorySlug !== 'new-arrivals' && collection !== 'new-arrivals') e.currentTarget.style.background = 'transparent'; }}
+                >
+                  New Arrivals
+                </button>
+
                 {categories.map((cat) => {
-                  const isSelected = categoryId === cat.id || categorySlug === cat.slug;
+                  const isSelected = categoryId === cat.id || (categorySlug === cat.slug && categorySlug !== 'new-arrivals');
                   return (
                     <button
                       key={cat.id}
-                      onClick={() => updateFilters({ categoryId: cat.id, category: null, sub: null })}
+                      onClick={() => updateFilters({ categoryId: cat.id, category: cat.slug, sub: null, collection: null })}
                       style={{
                         textAlign: 'left',
                         padding: '0.5rem 0.75rem',
@@ -266,23 +313,35 @@ function ProductsContent() {
             </div>
           </aside>
 
-          {/* Product Grid */}
+          {/* Product Grid Container */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            {/* Results count & current active tag if filtering */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <p style={{ fontSize: '0.875rem', color: 'var(--clr-text-2)', fontFamily: 'var(--font-mono)' }}>
-                {pagination.total} products found
-              </p>
-              {subCategory && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.25rem 0.625rem', background: 'var(--clr-brand-tint)', border: '1px solid var(--clr-brand)', borderRadius: 'var(--r-full)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--clr-brand)', textTransform: 'capitalize' }}>
-                  Subcategory: {subCategory.replace('-', ' ')}
-                  <button onClick={() => updateFilters({ sub: null })} style={{ display: 'inline-flex', alignSelf: 'center', cursor: 'pointer', fontWeight: 700, paddingLeft: '0.25rem', border: 'none', background: 'none', color: 'var(--clr-brand)' }}>×</button>
-                </div>
-              )}
+            {/* Results toolbar: count, view as switcher, and active filter tags */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <p style={{ fontSize: '0.875rem', color: 'var(--clr-text-2)', fontFamily: 'var(--font-mono)', margin: 0 }}>
+                  {pagination.total} products found
+                </p>
+                <ViewAsToolbar currentMode={viewMode} onModeChange={handleViewModeChange} />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                {(categorySlug === 'new-arrivals' || collection === 'new-arrivals') && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.25rem 0.625rem', background: 'var(--clr-brand-tint)', border: '1px solid var(--clr-brand)', borderRadius: 'var(--r-full)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--clr-brand)' }}>
+                    Category: New Arrivals
+                    <button onClick={() => updateFilters({ category: null, collection: null, sub: null })} style={{ display: 'inline-flex', alignSelf: 'center', cursor: 'pointer', fontWeight: 700, paddingLeft: '0.25rem', border: 'none', background: 'none', color: 'var(--clr-brand)' }}>×</button>
+                  </div>
+                )}
+                {subCategory && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.25rem 0.625rem', background: 'var(--clr-brand-tint)', border: '1px solid var(--clr-brand)', borderRadius: 'var(--r-full)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--clr-brand)', textTransform: 'capitalize' }}>
+                    Subcategory: {subCategory.replace(/-/g, ' ')}
+                    <button onClick={() => updateFilters({ sub: null, offers: null, tier: null, period: null })} style={{ display: 'inline-flex', alignSelf: 'center', cursor: 'pointer', fontWeight: 700, paddingLeft: '0.25rem', border: 'none', background: 'none', color: 'var(--clr-brand)' }}>×</button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {loading ? (
-              <div className="product-grid animate-fade-in">
+              <div className={`product-grid ${viewMode} animate-fade-in`}>
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                   <div key={i} className="skeleton-product-card">
                     <div className="skeleton-image" />
@@ -303,7 +362,7 @@ function ProductsContent() {
               </div>
             ) : (
               <>
-                <div className="product-grid animate-fade-in">
+                <div className={`product-grid ${viewMode} animate-fade-in`}>
                   {products.map((product, idx) => (
                     <ProductCard key={product.id} product={product} index={idx} />
                   ))}

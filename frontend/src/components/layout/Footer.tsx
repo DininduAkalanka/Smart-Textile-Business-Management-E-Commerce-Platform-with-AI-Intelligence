@@ -31,7 +31,7 @@ const COLS = [
   {
     heading: 'Shop',
     links: [
-      { label: 'New Arrivals',          href: '/products?sort=newest' },
+      { label: 'New Arrivals',          href: '/#latest-arrivals' },
       { label: 'Women',                 href: '/products?category=women' },
       { label: 'Men',                   href: '/products?category=men' },
       { label: 'Teenagers',             href: '/products?category=teenagers' },
@@ -52,7 +52,7 @@ const COLS = [
     heading: 'Customer Care',
     links: [
       { label: 'Track My Order',    href: '/orders' },
-      { label: 'Returns & Exchange', href: '#' },
+      { label: 'Returns & Exchange', href: '/returns-exchange' },
       { label: 'Shipping Information', href: '#' },
       { label: 'Size & Fit Guide',  href: '#' },
       { label: 'Frequently Asked',  href: '#' },

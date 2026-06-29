@@ -63,6 +63,10 @@ export class ProductsService {
     categoryId?: string;
     categorySlug?: string;
     subCategory?: string;
+    collection?: string;
+    offers?: string;
+    tier?: string;
+    period?: string;
     minPrice?: number;
     maxPrice?: number;
     sortBy?: string;
@@ -88,27 +92,46 @@ export class ProductsService {
     // Category filter
     if (query.categoryId) {
       where.categoryId = query.categoryId;
-    } else if (query.categorySlug) {
+    } else if (query.categorySlug && query.categorySlug !== 'new-arrivals') {
       where.category = { slug: query.categorySlug };
     }
 
-    // Subcategory filter
+    // Subcategory & Virtual Collection filters
     if (query.subCategory) {
-      where.subCategory = query.subCategory;
+      if (query.subCategory === 'special-offers' || query.offers === '1' || query.offers === 'true') {
+        where.compareAtPrice = { not: null };
+      } else if (query.subCategory === 'premium-collection' || query.tier === 'premium') {
+        where.price = { gte: 5000 };
+      } else if (query.subCategory === 'latest-this-week' || query.subCategory === 'trending-now') {
+        // Handled via custom sorting below
+      } else {
+        where.subCategory = query.subCategory;
+      }
+    } else {
+      if (query.offers === '1' || query.offers === 'true') {
+        where.compareAtPrice = { not: null };
+      }
+      if (query.tier === 'premium') {
+        where.price = { gte: 5000 };
+      }
     }
 
     // Price range filter
     if (query.minPrice !== undefined || query.maxPrice !== undefined) {
-      where.price = {};
+      where.price = where.price || {};
       if (query.minPrice !== undefined) where.price.gte = query.minPrice;
       if (query.maxPrice !== undefined) where.price.lte = query.maxPrice;
     }
 
     // Sorting
     const orderBy: any = {};
-    const sortBy = query.sortBy || 'createdAt';
-    const sortOrder = query.sortOrder || 'desc';
-    orderBy[sortBy] = sortOrder;
+    if (query.subCategory === 'trending-now' || query.sortBy === 'trending') {
+      orderBy['stockQuantity'] = 'desc';
+    } else {
+      const sortBy = query.sortBy || 'createdAt';
+      const sortOrder = query.sortOrder || 'desc';
+      orderBy[sortBy] = sortOrder;
+    }
 
     const [products, total] = await Promise.all([
       this.prisma.product.findMany({

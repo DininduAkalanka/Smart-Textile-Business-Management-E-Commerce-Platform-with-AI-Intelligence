@@ -7,7 +7,7 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install dependencies (skip libc6-compat – not required for Next.js on Alpine)
+# Install dependencies
 RUN npm ci
 
 # ── builder: build the Next.js app ─────────────────────────
